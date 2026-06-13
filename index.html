@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07101d">
+  <title>Full Court Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="topbar">
+    <a class="brand" href="#">FULL<span>COURT</span></a>
+    <div class="season-chip">NBA · Kaderstand 2025/26</div>
+  </header>
+
+  <main>
+    <section id="setup-screen" class="setup-screen">
+      <div class="hero-copy">
+        <p class="eyebrow">DEINE LIGA. DEINE ENTSCHEIDUNGEN.</p>
+        <h1>ÜBERNIMM<br><em>DAS PARKETT.</em></h1>
+        <p class="intro">Wähle eine der 30 NBA-Franchises und führe sie an die Spitze – oder kontrolliere die gesamte Liga.</p>
+      </div>
+
+      <div class="setup-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="step">SCHRITT 01</p>
+            <h2>Wen möchtest du managen?</h2>
+          </div>
+          <span id="selection-count">0 ausgewählt</span>
+        </div>
+
+        <button id="all-teams" class="all-teams-card" type="button">
+          <span class="all-icon">◎</span>
+          <span><strong>ALLE TEAMS VERWALTEN</strong><small>Volle Kontrolle über Transfers, Aufstellungen und Taktiken der gesamten Liga.</small></span>
+          <span class="check">✓</span>
+        </button>
+
+        <div class="divider"><span>ODER WÄHLE EIN TEAM</span></div>
+        <div id="team-grid" class="team-grid"></div>
+
+        <div class="manager-row">
+          <label for="manager-name">Managername</label>
+          <input id="manager-name" maxlength="24" value="Coach" autocomplete="off">
+        </div>
+        <button id="start-game" class="start-button" type="button" disabled>KARRIERE STARTEN <span>→</span></button>
+      </div>
+    </section>
+
+    <section id="dashboard" class="dashboard hidden">
+      <aside class="sidebar">
+        <div id="active-team-mark" class="active-team-mark"></div>
+        <nav>
+          <button class="nav-item active" data-view="overview">Übersicht</button>
+          <button class="nav-item" data-view="roster">Kader</button>
+          <button class="nav-item" data-view="schedule">Spielplan</button>
+          <button class="nav-item" data-view="standings">Tabelle</button>
+        </nav>
+        <button id="new-career" class="new-career">Neue Karriere</button>
+      </aside>
+      <div class="dashboard-content">
+        <div class="dash-head">
+          <div><p class="eyebrow">MANAGER-ZENTRALE</p><h2 id="welcome-title"></h2></div>
+          <select id="team-switcher" class="team-switcher"></select>
+        </div>
+        <div id="view-content"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
