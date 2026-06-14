@@ -83,9 +83,15 @@ h1 em { color: transparent; -webkit-text-stroke: 1.5px var(--orange); font-style
 .number { color: var(--orange); font: 700 17px 'Barlow Condensed'; }
 .player-row small, .game-row small { color: var(--muted); display: block; margin-top: 3px; }
 .rating { color: var(--gold); font-weight: 700; }
-.next-game { padding: 28px 10px; text-align: center; }
+.next-game { padding: 20px 10px; text-align: center; }
 .next-game .versus { color: var(--orange); font: 800 15px 'Barlow Condensed'; margin: 15px; }
-.next-game strong { font: 700 24px 'Barlow Condensed'; }
+.next-matchup { display: grid; grid-template-columns: minmax(90px,1fr) 36px minmax(90px,1fr); align-items: center; gap: 8px; }
+.next-team { min-width: 0; display: grid; justify-items: center; gap: 3px; }
+.next-team-logo { width: 76px; height: 76px; object-fit: contain; filter: drop-shadow(0 5px 8px #0009); }
+.next-team-abbr { width: 70px; height: 70px; display: grid; place-items: center; color: white; border: 1px solid color-mix(in srgb,var(--next-team-color) 75%,white); border-radius: 18px; background: color-mix(in srgb,var(--next-team-color) 35%,#151a22); font: 800 23px 'Barlow Condensed'; }
+.next-team strong { font: 800 20px 'Barlow Condensed'; }
+.next-team small { max-width: 125px; overflow: hidden; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.next-team b { color: white; font: 800 14px 'Barlow Condensed'; }
 .muted { color: var(--muted); font-size: 12px; }
 .existing-saves { margin-top: 42px; max-width: 480px; }
 .save-card { width: 100%; display: block; text-align: left; padding: 14px 16px; margin: 8px 0; border: 1px solid var(--line); background: var(--panel); cursor: pointer; }
@@ -616,7 +622,7 @@ h1 em { filter: drop-shadow(0 0 22px rgba(255,90,31,.13)); }
 .number { color: var(--team-accent); }
 .rating { color: #ffc75a; }
 .next-game { position: relative; margin-top: 8px; border-radius: 13px; background: radial-gradient(circle at 50% 0,color-mix(in srgb,var(--team-accent) 15%,transparent),transparent 65%); }
-.next-game strong { display: inline-grid; place-items: center; min-width: 64px; height: 64px; border-radius: 16px; background: rgba(255,255,255,.05); border: 1px solid var(--line); font-size: 28px; }
+.next-game .next-team strong { display: block; min-width: 0; height: auto; border: 0; border-radius: 0; background: transparent; font-size: 20px; }
 .next-game .versus { display: inline-block; color: var(--team-accent); }
 
 .table-wrap { border: 1px solid rgba(255,255,255,.055); border-radius: 12px; }
