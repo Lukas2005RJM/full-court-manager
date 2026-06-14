@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=9">
+  <link rel="stylesheet" href="styles.css?v=10">
 </head>
 <body>
   <div class="noise"></div>
@@ -38,14 +38,14 @@
       <aside class="sidebar">
         <div id="active-team-mark" class="active-team-mark"></div>
         <nav>
-          <button class="nav-item active" data-view="overview">Übersicht</button>
-          <button class="nav-item" data-view="roster">Kader & Verträge</button>
-          <button class="nav-item" data-view="rotation">Rotation & Training</button>
-          <button class="nav-item" data-view="schedule">Spielplan</button>
-          <button class="nav-item" data-view="standings">Tabelle</button>
-          <button class="nav-item" data-view="transactions">Trades & Free Agency</button>
-          <button class="nav-item" data-view="draft">Draft & Entwicklung</button>
-          <button class="nav-item" data-view="playoffs">Playoffs</button>
+          <button class="nav-item active" data-view="overview"><span>⌂</span>Übersicht</button>
+          <button class="nav-item" data-view="roster"><span>◫</span>Kader & Verträge</button>
+          <button class="nav-item" data-view="rotation"><span>↕</span>Rotation & Training</button>
+          <button class="nav-item" data-view="schedule"><span>□</span>Spielplan</button>
+          <button class="nav-item" data-view="standings"><span>≡</span>Tabelle</button>
+          <button class="nav-item" data-view="transactions"><span>⇄</span>Trades & Free Agency</button>
+          <button class="nav-item" data-view="draft"><span>☆</span>Draft & Entwicklung</button>
+          <button class="nav-item" data-view="playoffs"><span>♛</span>Playoffs</button>
         </nav>
         <button id="save-game" class="new-career">Spiel speichern</button>
         <button id="new-career" class="new-career">Karriere wechseln</button>
@@ -57,7 +57,7 @@
     </section>
   </main>
   <div id="game-modal" class="modal hidden"><div class="modal-card"><button id="close-modal" class="modal-close">×</button><div id="modal-content"></div></div></div>
-  <script src="rosters.js?v=9"></script>
-  <script src="app.js?v=9"></script>
+  <script src="rosters.js?v=10"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>

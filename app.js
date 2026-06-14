@@ -224,7 +224,7 @@ function showDashboard(){
   $('#team-switcher').classList.toggle('hidden',!save.controlAll); renderView('overview');
 }
 
-function setHeader(){const t=activeTeam();$('#welcome-title').textContent=`${save.manager} · ${t.abbr}`;$('#season-status').textContent=`${save.seasonLabel} · ${save.phase} · ${save.phase==='Regular Season'?`Spieltag ${Math.min(82,save.day+1)}`:''}`;$('#active-team-mark').innerHTML=`${fullName(t)}<small>${save.controlAll?'Alle Teams steuerbar':`Slot ${slot}`} · ${money(payroll(t.id))} Payroll</small>`;}
+function setHeader(){const t=activeTeam();document.documentElement.style.setProperty('--team-accent',t.color);$('#welcome-title').textContent=`${save.manager} · ${t.abbr}`;$('#season-status').textContent=`${save.seasonLabel} · ${save.phase} · ${save.phase==='Regular Season'?`Spieltag ${Math.min(82,save.day+1)}`:''}`;$('#active-team-mark').innerHTML=`<span class="team-mark-badge">${t.abbr}</span><span>${fullName(t)}<small>${save.controlAll?'Alle Teams steuerbar':`Slot ${slot}`} · ${money(payroll(t.id))} Payroll</small></span>`;}
 
 function renderView(view=currentView){currentView=view;setHeader();document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===view));const fn={overview:renderOverview,roster:renderRoster,rotation:renderRotation,schedule:renderSchedule,standings:renderStandings,transactions:renderTransactions,draft:renderDraft,playoffs:renderPlayoffs}[view]||renderOverview;fn();}
 
