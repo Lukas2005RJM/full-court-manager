@@ -75,6 +75,11 @@ h1 em { color: transparent; -webkit-text-stroke: 1.5px var(--orange); font-style
 .dash-grid { display: grid; grid-template-columns: 1.3fr .7fr; gap: 14px; margin-top: 14px; }
 .content-card h3 { margin: 0 0 20px; font-size: 23px; }
 .player-row, .game-row, .standing-row { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--line); }
+.standing-row { grid-template-columns: 28px 38px minmax(0,1fr) auto; gap: 10px; }
+.standing-row > strong { min-width: 0; }
+.standing-row > strong small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; font-weight: 600; }
+.standing-logo { width: 34px; height: 34px; object-fit: contain; filter: drop-shadow(0 3px 5px #0008); }
+.standing-abbr { width: 32px; height: 32px; display: grid; place-items: center; color: white; border: 1px solid color-mix(in srgb,var(--standing-color) 75%,white); border-radius: 50%; background: color-mix(in srgb,var(--standing-color) 38%,#111820); font: 800 9px Arial; }
 .number { color: var(--orange); font: 700 17px 'Barlow Condensed'; }
 .player-row small, .game-row small { color: var(--muted); display: block; margin-top: 3px; }
 .rating { color: var(--gold); font-weight: 700; }
