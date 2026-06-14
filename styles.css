@@ -845,3 +845,42 @@ th, td { padding: 12px 11px; }
 .tactics-savebar { grid-column: 1/-1; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 10px 6px 15px; border: 1px solid #4c565e; border-top: 2px solid var(--team-accent); background: #10171d; box-shadow: 0 -10px 30px #0007; }.tactics-savebar span { display: grid; }.tactics-savebar b { color: white; font-size: 10px; }.tactics-savebar small { margin-top: 2px; color: #87929c; font-size: 7px; }.tactics-savebar .primary-action { min-width: 230px; height: 40px; min-height: 40px; margin: 0; color: white; font-weight: 900; text-shadow: 0 1px 2px #0009; }
 @media (max-width: 1200px) { .tactics-workspace { grid-template-columns: minmax(320px,1fr) minmax(350px,1fr) 250px; }.tactic-court-player { width: 76px; }.profile-row { grid-template-columns: 70px 1fr 22px; } }
 @media (max-width: 900px) { .dashboard-content.tactics-view { height: auto; min-height: 0; overflow: visible; }.tactics-workspace { height: auto; grid-template-columns: 1fr; grid-template-rows: auto; }.tactic-controls { min-height: 600px; }.roles-panel { min-height: 620px; }.tactics-side { grid-template-rows: auto auto 300px; }.tactics-savebar { position: sticky; bottom: 0; } }
+
+/* Larger, full-width rotation interface */
+.dashboard > .dashboard-content.rotation-view { width: 100%; max-width: none; margin: 0; padding: 12px 20px 10px; }
+.rotation-workspace { grid-template-columns: minmax(470px,1.12fr) minmax(470px,1.08fr) minmax(340px,.8fr); gap: 12px; }
+.rotation-panel-head { height: 48px; padding: 0 16px; }
+.rotation-panel-head h3 { font-size: 18px; }
+.rotation-panel-head span,.rotation-panel-head b { font-size: 12px; }
+.rotation-panel-head button { padding: 9px 17px; font-size: 11px; }
+.court-panel { grid-template-rows: 48px 320px auto 40px minmax(0,1fr); }
+.basketball-court { margin: 10px 12px 5px; }
+.court-player { width: 142px; grid-template-columns: 44px 28px 1fr; grid-template-rows: 28px 24px; gap: 3px 5px; padding: 7px; }
+.court-player .court-photo,.court-fallback { width: 44px; height: 55px; }
+.court-fallback { font-size: 15px; }
+.court-player > b { width: 28px; height: 25px; font-size: 10px; }
+.court-player select { padding: 4px; font-size: 10px; }
+.court-player small { font-size: 9px; }
+.court-pg { bottom: 10px; }.court-sg { right: 4%; bottom: 68px; }.court-sf { left: 4%; bottom: 68px; }.court-pf { left: 18%; top: 26px; }.court-c { right: 18%; top: 26px; }
+.court-panel .lineup-warning { max-height: 58px; padding: 8px 11px; font-size: 10px; }
+.bench-head { height: 40px; padding: 0 13px; }.bench-head h3 { font-size: 14px; }.bench-head small { font-size: 10px; }
+.bench-drag-list { padding: 0 10px 10px; }
+.bench-drag-row { grid-template-columns: 20px 25px 38px minmax(0,1fr) 50px; gap: 7px; min-height: 50px; padding: 5px; }
+.drag-handle { font-size: 18px; }.bench-drag-row .bench-rank { width: 24px; height: 24px; font-size: 10px; }.bench-photo,.bench-drag-row i { width: 36px; height: 41px; }.bench-drag-row i { font-size: 10px; }.bench-drag-row strong { font-size: 12px; }.bench-drag-row small { margin-top: 2px; font-size: 9px; }
+.fitness-pill,.workload { padding: 5px; font-size: 9px; }
+.minutes-panel { grid-template-rows: 48px 32px minmax(0,1fr); }
+.rotation-groups { font-size: 9px; }
+.minute-scroll { padding: 4px 12px 12px; }
+.minute-slider-row { grid-template-columns: minmax(190px,1fr) minmax(130px,.9fr) 36px 58px; gap: 10px; min-height: 56px; padding: 4px 2px; }
+.minute-player { grid-template-columns: 40px minmax(0,1fr); gap: 9px; }.minute-photo,.minute-player > span { width: 40px; height: 46px; }.minute-player > span { font-size: 12px; }.minute-player strong { font-size: 12px; }.minute-player small { margin-top: 3px; font-size: 9px; }
+.minute-input { height: 7px; }.minute-slider-row output { padding: 7px 3px; font-size: 13px; }
+.rotation-side { grid-template-rows: 280px minmax(0,1fr); gap: 12px; }.lineup-score { padding: 15px 0 9px; }.lineup-score strong { font-size: 48px; }.lineup-score small { font-size: 10px; }
+.metric-grid { gap: 7px; padding: 0 13px; }.metric-grid span { padding: 10px; font-size: 9px; }.metric-grid b { margin-top: 4px; font-size: 17px; }.risk-summary { margin: 10px 13px 0; padding: 9px; }.risk-summary span,.risk-summary small { font-size: 9px; }.risk-summary b { font-size: 15px; }
+.training-note { padding: 9px 12px; font-size: 9px; }.training-scroll { padding: 3px 10px 10px; }.training-compact { grid-template-columns: 38px minmax(95px,1fr) 112px 32px; gap: 7px; min-height: 51px; }.training-photo,.training-compact i { width: 36px; height: 42px; }.training-compact i { font-size: 10px; }.training-compact strong { font-size: 11px; }.training-compact small { margin-top: 2px; font-size: 8px; }.training-compact select { padding: 7px 5px; font-size: 9px; }.training-compact button { width: 31px; height: 31px; font-size: 15px; }
+.rotation-savebar { padding: 7px 12px 7px 18px; }.rotation-savebar b { font-size: 13px; }.rotation-savebar small { font-size: 9px; }.rotation-savebar .primary-action { min-width: 280px; font-size: 13px; }
+@media (max-width: 1500px) {
+  .rotation-workspace { grid-template-columns: minmax(400px,1.08fr) minmax(400px,1fr) minmax(300px,.76fr); }
+  .court-player { width: 124px; grid-template-columns: 39px 25px 1fr; }
+  .court-player .court-photo,.court-fallback { width: 39px; height: 50px; }
+  .minute-slider-row { grid-template-columns: minmax(160px,1fr) minmax(105px,.8fr) 32px 52px; }
+}
