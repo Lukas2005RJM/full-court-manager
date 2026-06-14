@@ -345,14 +345,27 @@ tbody tr.selected-player .rating { color: #111; }
 }
 .dashboard > .dashboard-content { min-height: calc(100vh - 118px); }
 
+/* Larger featured player portrait */
+.roster-viewer { min-height: 240px; grid-template-columns: 260px minmax(0,1fr); }
+.viewer-player { grid-template-columns: 200px 105px minmax(270px,1fr) 145px; min-height: 240px; padding: 12px 26px; }
+.player-image-wrap,.player-portrait { width: 190px; height: 215px; }
+.player-portrait { border-radius: 92px 92px 8px 8px; }
+.player-avatar { width: 190px; height: 215px; border-radius: 92px 92px 8px 8px; font-size: 58px; }
+.player-image-button { bottom: 7px; }
+
 @media (max-width: 1050px) {
   .dashboard > .sidebar { grid-template-columns: 175px minmax(0,1fr) !important; }
   .dashboard > .sidebar .new-career { display: none !important; }
+  .viewer-player { grid-template-columns: 135px 82px minmax(0,1fr); }
+  .player-image-wrap,.player-portrait,.player-avatar { width: 128px; height: 160px; }
 }
 @media (max-width: 760px) {
   .dashboard > .sidebar { top: 0 !important; height: 58px !important; min-height: 58px !important; display: block !important; padding: 5px 8px !important; }
   .dashboard > .sidebar .active-team-mark,.dashboard > .sidebar .new-career { display: none !important; }
   .dashboard > .sidebar nav { height: 48px !important; }
+  .roster-viewer,.viewer-player { min-height: 150px; }
+  .viewer-player { grid-template-columns: 92px 62px minmax(0,1fr); }
+  .player-image-wrap,.player-portrait,.player-avatar { width: 86px; height: 118px; }
 }
 
 /* Theme selection */
