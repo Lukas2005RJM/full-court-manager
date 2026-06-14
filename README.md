@@ -4,7 +4,7 @@ Ein browserbasiertes NBA-Manager-Spiel mit allen 30 Teams.
 
 ## Funktionen
 
-- aktuelle 15-Spieler-Kader mit automatischem Online-Abruf und Offline-Ersatzkadern
+- fest eingebaute 15-Spieler-Kader mit Stand 13. Juni 2026
 - drei getrennte Karriere-Speicherplätze
 - 82-Spiele-Saison, Match-Simulation und vollständige Boxscores
 - Rotation, Spielminuten, Training, Müdigkeit und Verletzungen
@@ -13,7 +13,7 @@ Ein browserbasiertes NBA-Manager-Spiel mit allen 30 Teams.
 - Play-in-Turnier, Best-of-Seven-Playoffs und NBA Finals
 - Draft, Potential, Alterung und Entwicklung über mehrere Saisons
 
-Die Spielerbewertungen und Vertragswerte sind Simulationswerte und keine offiziellen NBA-2K- oder Vertragsdaten.
+Die Spielerbewertungen und Vertragswerte sind Simulationswerte und keine offiziellen NBA-2K- oder Vertragsdaten. Kaderbewegungen nach dem 13. Juni 2026 sind nicht enthalten.
 
 ## Website
 

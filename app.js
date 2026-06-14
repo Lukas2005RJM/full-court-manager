@@ -31,7 +31,7 @@ const teamData = [
   ['was','Washington','Wizards','WAS','#002b5c','East',68,['Trae Young','Alex Sarr','Tre Johnson','Bilal Coulibaly','Bub Carrington']]
 ];
 
-const teams = teamData.map(([id,city,name,abbr,color,conference,strength,stars]) => ({id,city,name,abbr,color,conference,strength,stars}));
+const teams = teamData.map(([id,city,name,abbr,color,conference,strength,stars]) => ({id,city,name,abbr,color,conference,strength,stars:STATIC_ROSTERS[id]||stars}));
 const firstNames = ['Andre','Marcus','Jaylen','Devin','Jordan','Cameron','Isaiah','Malik','Darius','Jamal','Tyler','Aaron','Miles','Jaden','Xavier'];
 const lastNames = ['Williams','Johnson','Brown','Miller','Davis','Wilson','Moore','Taylor','Anderson','Thomas','Jackson','Martin','White','Harris','Walker'];
 const positions = ['PG','SG','SF','PF','C'];
@@ -75,11 +75,7 @@ function makePlayer(name,i,team,index) {
   return {id:`${team.id}_${index}_${name.replace(/\W/g,'')}`,name,number:(index*7+team.strength)%56,position:positions[index%5],age,rating,potential:clamp(rating+(age<24?rand(4,10):rand(-2,3)),60,98),salary:Number((star?(rating-60)*0.9+4:rand(12,80)/10).toFixed(1)),years:rand(1,4),minutes:rotation[index]||0,fatigue:0,injury:0,training:'Ausgewogen',stats:{gp:0,pts:0,reb:0,ast:0,stl:0,blk:0}};
 }
 
-function fallbackRoster(team) {
-  const names=[...team.stars];
-  for(let i=5;i<15;i++) names.push(`${firstNames[(i+team.strength)%firstNames.length]} ${lastNames[(i*3+teams.indexOf(team))%lastNames.length]}`);
-  return names.map((n,i)=>makePlayer(n,i,team,i));
-}
+function fallbackRoster(team) { return team.stars.slice(0,15).map((n,i)=>makePlayer(n,i,team,i)); }
 
 async function fetchRoster(team) {
   try {
@@ -88,7 +84,7 @@ async function fetchRoster(team) {
     const data=await response.json();
     const raw=data.athletes||[];
     const athletes=(raw.some(g=>g.items||g.athletes)?raw.flatMap(g=>g.items||g.athletes||[]):raw).slice(0,15);
-    if(athletes.length<10) throw new Error('short roster');
+    if(athletes.length<15) throw new Error('short roster');
     return athletes.map((a,i)=>{
       const p=makePlayer(a.fullName||a.displayName||`Spieler ${i+1}`,i,team,i);
       p.number=Number(a.jersey)||p.number;
@@ -117,17 +113,17 @@ function generateProspects(season=1) {
 
 function makeFreeAgents() { return Array.from({length:20},(_,i)=>makePlayer(`${firstNames[(i+7)%15]} ${lastNames[(i*5+4)%15]}`,8+i,teams[i%30],90+i)).map((p,i)=>({...p,id:`fa_${i}`,rating:clamp(76-i+rand(-2,3),62,79),salary:Number((2+Math.max(0,15-i)*.45).toFixed(1)),years:1,minutes:0})); }
 
-async function startCareer() {
+function startCareer() {
   const button=$('#start-game'); button.disabled=true; button.firstChild.textContent='KADER WERDEN GELADEN... ';
   slot=$('#save-slot').value;
   const rosters={};
-  const loaded=await Promise.all(teams.map(fetchRoster)); teams.forEach((t,i)=>rosters[t.id]=loaded[i]);
-  save={version:3,slot,manager:$('#manager-name').value.trim()||'Coach',controlAll:selection==='all',activeTeam:selection==='all'?'atl':selection,season:1,seasonLabel:'2025/26',phase:'Regular Season',day:0,rosters,records:Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}])),schedule:generateSchedule(),freeAgents:makeFreeAgents(),prospects:generateProspects(),history:[],playoffs:null,lastGame:null,news:['Die neue NBA-Saison beginnt.'],trainingPoints:Object.fromEntries(teams.map(t=>[t.id,3]))};
+  const loaded=teams.map(fallbackRoster); teams.forEach((t,i)=>rosters[t.id]=loaded[i]);
+  save={version:4,slot,manager:$('#manager-name').value.trim()||'Coach',controlAll:selection==='all',activeTeam:selection==='all'?'atl':selection,season:1,seasonLabel:'2025/26',phase:'Regular Season',day:0,rosters,records:Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}])),schedule:generateSchedule(),freeAgents:makeFreeAgents(),prospects:generateProspects(),history:[],playoffs:null,lastGame:null,news:['Die neue NBA-Saison beginnt.'],trainingPoints:Object.fromEntries(teams.map(t=>[t.id,3]))};
   persist(); showDashboard();
 }
 
 function persist() { localStorage.setItem(saveKey(slot),JSON.stringify(save)); }
-function readSave(n) { try { const d=JSON.parse(localStorage.getItem(saveKey(n))); return d?.version===3?d:null; } catch{return null;} }
+function readSave(n) { try { const d=JSON.parse(localStorage.getItem(saveKey(n))); return d?.version===4?d:null; } catch{return null;} }
 function activeTeam(){return teamById(save.activeTeam);}
 function payroll(id){return save.rosters[id].reduce((s,p)=>s+p.salary,0);}
 function healthyRoster(id){return save.rosters[id].filter(p=>p.injury<=0);}
@@ -146,7 +142,7 @@ function renderView(view=currentView){currentView=view;setHeader();document.quer
 
 function renderOverview(){
   const t=activeTeam(),r=save.records[t.id],next=findNextGame(t.id),rank=conferenceStandings(t.conference).findIndex(x=>x.id===t.id)+1;
-  $('#view-content').innerHTML=`<div class="stats-grid"><div class="stat-box"><small>Bilanz</small><strong>${r.wins}-${r.losses}</strong></div><div class="stat-box"><small>Conference</small><strong>#${rank}</strong></div><div class="stat-box"><small>Payroll / Cap</small><strong>${money(payroll(t.id))}</strong><small>${money(cap)} Cap</small></div><div class="stat-box"><small>Teamstärke</small><strong>${teamPower(t.id).toFixed(0)}</strong></div></div>
+  $('#view-content').innerHTML=`<div class="stats-grid"><div class="stat-box"><small>Bilanz</small><strong>${r.wins}-${r.losses}</strong></div><div class="stat-box"><small>Conference</small><strong>#${rank}</strong></div><div class="stat-box"><small>Kader</small><strong>${save.rosters[t.id].length}</strong><small>Spieler</small></div><div class="stat-box"><small>Teamstärke</small><strong>${teamPower(t.id).toFixed(0)}</strong></div></div>
   <div class="action-bar"><button class="primary-action" id="sim-next" ${save.phase!=='Regular Season'?'disabled':''}>NÄCHSTEN SPIELTAG SIMULIEREN</button><button class="secondary-action" id="sim-10" ${save.phase!=='Regular Season'?'disabled':''}>10 SPIELTAGE</button></div>
   <div class="dash-grid"><div class="content-card"><h3>Team-News</h3>${save.news.slice(-6).reverse().map(n=>`<p class="news-item">${n}</p>`).join('')}</div><div class="content-card"><h3>Nächstes Spiel</h3>${next?`<div class="next-game"><strong>${teamById(next.home).abbr}</strong><span class="versus">VS</span><strong>${teamById(next.away).abbr}</strong><p>Spieltag ${next.day+1}</p></div>`:`<p class="muted">Reguläre Saison beendet.</p>`}${save.lastGame?`<button class="text-button" id="last-boxscore">Letzten Boxscore öffnen</button>`:''}</div></div>`;
 }
