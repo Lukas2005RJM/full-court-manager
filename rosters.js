@@ -32,6 +32,41 @@ const STATIC_ROSTERS = {
   was:['Anthony Davis','Trae Young','Alex Sarr','Tre Johnson','Bilal Coulibaly','Jaden Hardy','DAngelo Russell','Bub Carrington','Cam Whitmore','Will Riley','Kyshawn George','Justin Champagnie','Anthony Gill','Leaky Black','Jamir Watkins','Tristan Vukcevic','Sharife Cooper','Julian Reese']
 };
 
+// Primary and combo positions in the same order as STATIC_ROSTERS.
+// G = PG/SG, GF = SG/SF, F = SF/PF, FC = PF/C.
+const STATIC_POSITIONS = {
+  atl:'G F F G FC SF SF PG SG GF PF PG C PF C C G PG'.split(' '),
+  bos:'F GF G C SF PG GF GF C C F FC G GF G GF'.split(' '),
+  bkn:'F C GF G GF F C PG FC GF G FC F F G PF F G'.split(' '),
+  cha:'PG F GF PF G GF GF GF G F F FC GF C FC FC F SG'.split(' '),
+  chi:'G G G FC F GF FC PG PG PF F F C F PG FC G FC'.split(' '),
+  cle:'FC G G C GF PG SG F GF GF FC C PG G F F F C'.split(' '),
+  dal:'G F GF C PF F GF F GF C C G FC G PG SG PF C'.split(' '),
+  den:'C G PF F C FC GF F FC GF GF G PG F G PG F G'.split(' '),
+  det:'G PF GF GF FC GF F F C FC G PG GF FC GF GF C'.split(' '),
+  gsw:'PG F FC PF GF FC G G G F C G GF PG F C G GF'.split(' '),
+  hou:'F C PG C F FC G G C F PG GF PF F G PG F'.split(' '),
+  ind:'PG PF C G PF GF PG F GF F C GF FC G GF G F'.split(' '),
+  lac:'F PG PF GF F GF C FC F G G C GF GF GF PG G FC'.split(' '),
+  lal:'F G F G F GF FC C F G GF C G F GF G'.split(' '),
+  mem:'PG GF FC G PF C F G G PG F GF GF PG GF F C'.split(' '),
+  mia:'FC G F G PG F F FC F G G F GF F PG G C'.split(' '),
+  mil:'F FC F FC F G G GF GF F C SG F GF FC GF F'.split(' '),
+  min:'SG C PF F FC G G C GF G F F GF PG F PF G C'.split(' '),
+  nop:'PF G G F F C G F FC SG C C FC GF GF FC C G'.split(' '),
+  nyk:'FC F PG F GF C PG G F GF G PG C F F C F GF'.split(' '),
+  okc:'G C GF G FC SG F FC F F G PG C G G GF C F'.split(' '),
+  orl:'F GF G F F C C G GF FC F G F G C F F'.split(' '),
+  phi:'C F G GF G F C FC F PG F FC FC F F GF GF'.split(' '),
+  phx:'G G F G F C C F G G F FC F F GF F F G'.split(' '),
+  por:'G F F PG C GF PG GF C C F GF G F F GF G F'.split(' '),
+  sac:'GF C F F G F G F G C F FC C PG F PG F C'.split(' '),
+  sas:'PG GF F F FC FC G C G F F PG GF C C F GF F'.split(' '),
+  tor:'F F PG F C F GF GF FC GF FC F F PG GF G G'.split(' '),
+  uta:'F FC C F GF F C G FC GF FC F G G GF F C G'.split(' '),
+  was:'FC PG FC GF F G G G F F F F PF F F FC G FC'.split(' ')
+};
+
 // Hand-entered from the user's payroll and season-stat screenshots.
 // Salary values are annual millions; ratings are simulation ratings derived from role,
 // production, efficiency, defense, age and sample size.
