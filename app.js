@@ -46,6 +46,7 @@ let selection = null;
 let slot = '1';
 let save = null;
 let currentView = 'overview';
+let selectedTheme = localStorage.getItem('fullCourtTheme')||'arena';
 
 const $ = selector => document.querySelector(selector);
 const money = value => `$${Number(value).toFixed(1)}M`;
@@ -54,6 +55,7 @@ const fullName = t => `${t.city} ${t.name}`;
 const rand = (min,max) => Math.floor(Math.random()*(max-min+1))+min;
 const clamp = (n,min,max) => Math.max(min,Math.min(max,n));
 const saveKey = n => `fullCourtSaveV3_${n}`;
+function applyTheme(theme,persistChoice=true){selectedTheme=theme==='broadcast'?'broadcast':'arena';document.body.dataset.theme=selectedTheme;document.querySelectorAll('[data-theme-choice]').forEach(x=>x.classList.toggle('selected',x.dataset.themeChoice===selectedTheme));document.querySelectorAll('[data-theme-switch]').forEach(x=>x.classList.toggle('active',x.dataset.themeSwitch===selectedTheme));if(save)save.theme=selectedTheme;if(persistChoice)localStorage.setItem('fullCourtTheme',selectedTheme);}
 
 function renderTeamChoice() {
   $('#team-grid').innerHTML = teams.map(t => `<button class="team-card" style="--team-color:${t.color}" data-team="${t.id}"><span class="team-abbr">${t.abbr}</span><strong>${fullName(t)}</strong><small>${t.conference} · Stärke ${t.strength}</small><span class="check">✓</span></button>`).join('');
@@ -188,12 +190,12 @@ function startCareer() {
   slot=$('#save-slot').value;
   const rosters={};
   const loaded=teams.map(fallbackRoster); teams.forEach((t,i)=>rosters[t.id]=loaded[i]);
-  save=normalizeSaveData({version:10,slot,manager:$('#manager-name').value.trim()||'Coach',controlAll:selection==='all',activeTeam:selection==='all'?'atl':selection,season:1,seasonLabel:'2025/26',phase:'Regular Season',day:0,rosters:normalizePlayerPositions(rosters),records:Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}])),schedule:generateSchedule(),freeAgents:makeFreeAgents(),prospects:generateProspects(),history:[],playoffs:null,lastGame:null,news:['Die neue NBA-Saison beginnt.'],trainingPoints:Object.fromEntries(teams.map(t=>[t.id,3]))});
+  save=normalizeSaveData({version:11,theme:selectedTheme,slot,manager:$('#manager-name').value.trim()||'Coach',controlAll:selection==='all',activeTeam:selection==='all'?'atl':selection,season:1,seasonLabel:'2025/26',phase:'Regular Season',day:0,rosters:normalizePlayerPositions(rosters),records:Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}])),schedule:generateSchedule(),freeAgents:makeFreeAgents(),prospects:generateProspects(),history:[],playoffs:null,lastGame:null,news:['Die neue NBA-Saison beginnt.'],trainingPoints:Object.fromEntries(teams.map(t=>[t.id,3]))});
   persist(); showDashboard();
 }
 
 function persist() { localStorage.setItem(saveKey(slot),JSON.stringify(save)); }
-function readSave(n) { try { const d=JSON.parse(localStorage.getItem(saveKey(n)));if(!d||d.version<5)return null;d.rosters=normalizePlayerPositions(d.rosters);d.version=10;return normalizeSaveData(d); } catch{return null;} }
+function readSave(n) { try { const d=JSON.parse(localStorage.getItem(saveKey(n)));if(!d||d.version<5)return null;d.rosters=normalizePlayerPositions(d.rosters);d.version=11;d.theme=d.theme||selectedTheme;return normalizeSaveData(d); } catch{return null;} }
 function activeTeam(){return teamById(save.activeTeam);}
 function payroll(id){return save.rosters[id].reduce((s,p)=>s+p.salary,0);}
 function financeStatus(id){const pay=payroll(id);return {pay,tax:Math.max(0,(pay-taxLine)*1.5),level:pay>secondApron?'Second Apron':pay>firstApron?'First Apron':pay>taxLine?'Luxury Tax':pay>cap?'Über dem Cap':'Cap Space'};}
@@ -235,6 +237,7 @@ function teamPower(id){
 
 function showDashboard(){
   $('#setup-screen').classList.add('hidden'); $('#dashboard').classList.remove('hidden');
+  applyTheme(save.theme||selectedTheme,false);
   const list=save.controlAll?teams:teams.filter(t=>t.id===save.activeTeam);
   $('#team-switcher').innerHTML=list.map(t=>`<option value="${t.id}" ${t.id===save.activeTeam?'selected':''}>${fullName(t)}</option>`).join('');
   $('#team-switcher').classList.toggle('hidden',!save.controlAll); renderView('overview');
@@ -419,6 +422,8 @@ document.addEventListener('click',e=>{
   const nav=e.target.closest('.nav-item');if(nav)return renderView(nav.dataset.view);
   const team=e.target.closest('.team-card');if(team)return setSelection(team.dataset.team);
   const load=e.target.closest('[data-load-slot]');if(load){slot=load.dataset.loadSlot;save=readSave(slot);return showDashboard()}
+  const themeChoice=e.target.closest('[data-theme-choice]');if(themeChoice)return applyTheme(themeChoice.dataset.themeChoice);
+  const themeSwitch=e.target.closest('[data-theme-switch]');if(themeSwitch){applyTheme(themeSwitch.dataset.themeSwitch);persist();return}
   const sign=e.target.closest('[data-sign]');if(sign)return signPlayer(sign.dataset.sign);
   const scout=e.target.closest('[data-scout]');if(scout){const p=save.prospects.find(x=>x.id===scout.dataset.scout);p.scouted=true;save.scouting[p.id]=true;persist();return renderView('draft')}
   const benchUp=e.target.closest('[data-bench-up]');if(benchUp)return moveBenchPlayer(benchUp.dataset.benchUp,-1);
@@ -440,4 +445,4 @@ $('#new-career').addEventListener('click',()=>{persist();location.reload()});
 $('#close-modal').addEventListener('click',()=>$('#game-modal').classList.add('hidden'));
 $('#game-modal').addEventListener('click',e=>{if(e.target.id==='game-modal')e.currentTarget.classList.add('hidden')});
 
-renderTeamChoice();
+applyTheme(selectedTheme,false);renderTeamChoice();
