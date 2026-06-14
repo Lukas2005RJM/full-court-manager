@@ -163,6 +163,77 @@ th, td { padding: 11px 9px; border-bottom: 1px solid var(--line); white-space: n
   .training-row { grid-template-columns: 1fr; }
 }
 
+/* Dashboard overview upgrade */
+.dash-head h2 { display: flex; align-items: center; gap: 16px; }
+.dash-head h2 > span:last-child { display: grid; }
+.dash-head h2 small { margin-top: 4px; color: #9da8b5; font: 700 11px Inter; letter-spacing: .7px; text-transform: uppercase; }
+.dashboard-team-logo,.dashboard-team-abbr { width: 72px; height: 72px; flex: 0 0 72px; }
+.dashboard-team-logo { object-fit: contain; filter: drop-shadow(0 8px 13px #0009); }
+.dashboard-team-abbr { display: grid; place-items: center; border: 1px solid var(--team-accent); border-radius: 18px; background: color-mix(in srgb,var(--team-accent) 25%,#111820); font: 900 22px Arial; }
+#season-status { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+#season-status b,#season-status span { padding: 5px 9px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.035); }
+#season-status b { color: #111; border-color: var(--team-accent); background: var(--team-accent); }
+.overview-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
+.recent-results { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
+.recent-game { min-width: 0; display: grid; justify-items: center; gap: 5px; padding: 12px 5px; color: white; border: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.16); cursor: pointer; }
+.recent-game:hover { border-color: var(--team-accent); transform: translateY(-2px); }
+.recent-logo,.recent-abbr { width: 40px; height: 40px; }
+.recent-logo { object-fit: contain; }
+.recent-abbr { display: grid; place-items: center; border-radius: 50%; background: #27313b; font: 800 10px Arial; }
+.recent-game strong { text-align: center; font-size: 11px; }
+.recent-game strong small { display: block; margin-top: 3px; color: #aeb7c1; }
+.result-badge { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 6px; font-weight: 900; }
+.result-badge.win { color: #8ef0ab; background: #123923; }
+.result-badge.loss { color: #ff8b94; background: #451923; }
+.opponent-scout { display: grid; grid-template-columns: .65fr 1.4fr 1fr; gap: 8px; margin-top: 10px; }
+.opponent-scout span { min-width: 0; padding: 9px; border: 1px solid rgba(255,255,255,.07); background: rgba(0,0,0,.16); }
+.opponent-scout small,.opponent-scout b { display: block; }
+.opponent-scout small { margin-bottom: 4px; color: #8f9aa6; font-size: 8px; }
+.opponent-scout b { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.leaders-card { margin-top: 16px; }
+.leader-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 9px; }
+.team-leader { min-width: 0; display: grid; grid-template-columns: 48px minmax(0,1fr); align-items: center; gap: 9px; padding: 10px; border: 1px solid rgba(255,255,255,.07); background: rgba(0,0,0,.17); }
+.leader-photo,.leader-fallback { width: 48px; height: 58px; }
+.leader-photo { object-fit: cover; object-position: top; }
+.leader-fallback { display: grid; place-items: center; background: #26313a; color: var(--team-accent); font: 900 18px Arial; }
+.team-leader small,.team-leader strong,.team-leader b { display: block; }
+.team-leader small { color: #8e99a5; font-size: 8px; }
+.team-leader strong { margin: 3px 0; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.team-leader b { color: var(--team-accent); font-size: 18px; }
+.quick-actions { display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; margin: 16px 0; }
+.quick-actions button,.card-head button { padding: 11px 8px; color: #dce2e7; border: 1px solid rgba(255,255,255,.09); background: #1a222a; font-size: 9px; font-weight: 800; cursor: pointer; }
+.quick-actions button:hover,.card-head button:hover { color: #111; border-color: var(--team-accent); background: var(--team-accent); }
+.overview-bottom { display: grid; grid-template-columns: .8fr .7fr 1.3fr; gap: 16px; }
+.mini-standing { display: grid; grid-template-columns: 22px 30px 1fr auto; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,.06); }
+.mini-logo,.mini-standing i { width: 26px; height: 26px; }
+.mini-logo { object-fit: contain; }
+.mini-standing i { display: grid; place-items: center; border-radius: 50%; background: #27313b; font-size: 7px; font-style: normal; }
+.mini-standing > span { color: var(--team-accent); }
+.mini-standing b { font-size: 11px; }
+.today-game { display: grid; grid-template-columns: 1fr 25px 1fr; padding: 9px 0; border-top: 1px solid rgba(255,255,255,.06); text-align: center; }
+.today-game b { color: var(--team-accent); }
+.empty-copy { color: var(--muted); font-size: 11px; }
+.dashboard > .sidebar { grid-template-columns: 205px minmax(0,1fr) 95px 100px !important; }
+.dashboard > .sidebar .nav-item { padding: 0 8px !important; font-size: 9px !important; }
+.dashboard > .sidebar nav { scrollbar-width: none; }
+.dashboard > .sidebar nav::-webkit-scrollbar { display: none; }
+@media (max-width: 1050px) {
+  .leader-grid { grid-template-columns: repeat(3,1fr); }
+  .overview-bottom { grid-template-columns: 1fr 1fr; }
+  .overview-bottom > :last-child { grid-column: 1/-1; }
+  .dashboard > .sidebar { grid-template-columns: 165px minmax(0,1fr) !important; }
+}
+@media (max-width: 760px) {
+  .overview-grid,.overview-bottom { grid-template-columns: 1fr; }
+  .overview-bottom > :last-child { grid-column: auto; }
+  .recent-results { grid-template-columns: repeat(5,minmax(72px,1fr)); overflow-x: auto; }
+  .leader-grid { grid-template-columns: repeat(2,1fr); }
+  .quick-actions { grid-template-columns: repeat(2,1fr); }
+  .dashboard-team-logo,.dashboard-team-abbr { width: 52px; height: 52px; flex-basis: 52px; }
+  .dash-head h2 { font-size: 27px; }
+  .opponent-scout { grid-template-columns: 1fr; }
+}
+
 /* Roster Viewer interface */
 :root {
   --bg: #11171b;
@@ -686,4 +757,13 @@ th, td { padding: 12px 11px; }
   .content-card { border-radius: 13px; padding: 17px; }
   .starter-grid label { grid-template-columns: 40px minmax(0,1fr); }
   .bench-row { grid-template-columns: 25px minmax(0,1fr) 74px; }
+}
+
+/* Final compact dashboard navigation */
+.dashboard > .sidebar { grid-template-columns: 205px minmax(0,1fr) 95px 100px !important; }
+.dashboard > .sidebar .nav-item { padding: 0 8px !important; font-size: 9px !important; }
+.dashboard > .sidebar nav { scrollbar-width: none; }
+.dashboard > .sidebar nav::-webkit-scrollbar { display: none; }
+@media (max-width: 1050px) {
+  .dashboard > .sidebar { grid-template-columns: 165px minmax(0,1fr) !important; }
 }
