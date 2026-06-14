@@ -270,6 +270,72 @@ tbody tr.selected-player .rating { color: #111; }
   .viewer-tabs { overflow-x: auto; }
 }
 
+/* Navigation layout correction */
+.dashboard > .sidebar {
+  position: sticky !important;
+  top: 54px !important;
+  z-index: 20 !important;
+  width: 100% !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  display: grid !important;
+  grid-template-columns: 225px minmax(0,1fr) 105px 110px !important;
+  gap: 7px !important;
+  align-items: center !important;
+  padding: 7px 18px !important;
+  overflow: visible !important;
+}
+.dashboard > .sidebar .active-team-mark {
+  width: auto !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  margin: 0 !important;
+  padding: 5px 8px !important;
+}
+.dashboard > .sidebar nav {
+  width: 100% !important;
+  height: 48px !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 2px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+.dashboard > .sidebar .nav-item {
+  width: auto !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 10px !important;
+  margin: 0 !important;
+}
+.dashboard > .sidebar .new-career {
+  display: block !important;
+  width: 100% !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  margin: 0 !important;
+  padding: 0 7px !important;
+  text-align: center !important;
+}
+.dashboard > .dashboard-content { min-height: calc(100vh - 118px); }
+
+@media (max-width: 1050px) {
+  .dashboard > .sidebar { grid-template-columns: 175px minmax(0,1fr) !important; }
+  .dashboard > .sidebar .new-career { display: none !important; }
+}
+@media (max-width: 760px) {
+  .dashboard > .sidebar { top: 0 !important; height: 58px !important; min-height: 58px !important; display: block !important; padding: 5px 8px !important; }
+  .dashboard > .sidebar .active-team-mark,.dashboard > .sidebar .new-career { display: none !important; }
+  .dashboard > .sidebar nav { height: 48px !important; }
+}
+
 /* Theme selection */
 .theme-picker { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
 .theme-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
