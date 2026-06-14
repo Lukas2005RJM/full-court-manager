@@ -47,6 +47,7 @@ let slot = '1';
 let save = null;
 let currentView = 'overview';
 let selectedRosterPlayer = null;
+let imageEditorTarget = null;
 
 const $ = selector => document.querySelector(selector);
 const money = value => `$${Number(value).toFixed(1)}M`;
@@ -88,9 +89,20 @@ function makePicks(){return Object.fromEntries(teams.map(t=>[t.id,[0,1,2].flatMa
 function normalizeSaveData(d){
   d.tactics=d.tactics||Object.fromEntries(teams.map(t=>[t.id,defaultTactics()]));
   d.picks=d.picks||makePicks();d.scouting=d.scouting||{};d.awards=d.awards||[];d.leagueNews=d.leagueNews||[];
+  d.teamImages=d.teamImages||{};d.playerImages=d.playerImages||{};
   Object.values(d.rosters||{}).flat().forEach(p=>{p.form=p.form??0;p.morale=p.morale??75;p.injuryType=p.injuryType||''});
   return d;
 }
+
+function safeImageUrl(value){const url=String(value||'').trim();return /^(https:\/\/|data:image\/(png|jpe?g|webp);base64,)/i.test(url)?url:'';}
+function imageMarkup(url,className,alt,fallback){const safe=safeImageUrl(url);return safe?`<img class="${className}" src="${safe}" alt="${alt}">`:fallback;}
+function openImageEditor(type,id,label){
+  imageEditorTarget={type,id};const current=type==='team'?save.teamImages[id]:save.playerImages[id];
+  $('#modal-content').innerHTML=`<div class="image-editor"><p class="eyebrow">BILDMANAGER</p><h2>${label}</h2><div id="image-preview" class="image-preview">${imageMarkup(current,'','Vorschau','KEIN BILD')}</div><label>Öffentliche Bild-URL</label><input id="image-url" type="url" placeholder="https://..." value="${safeImageUrl(current)?.startsWith('https://')?current:''}"><span class="image-or">ODER</span><label class="file-button">BILD AUSWÄHLEN<input id="image-file" type="file" accept="image/png,image/jpeg,image/webp"></label><p class="muted">Uploads werden verkleinert und nur in diesem Browser-Spielstand gespeichert. Öffentliche URLs sind auch auf anderen Geräten sichtbar.</p><div class="image-actions"><button class="secondary-action" id="remove-image">ZURÜCKSETZEN</button><button class="primary-action" id="save-image">BILD SPEICHERN</button></div></div>`;
+  $('#game-modal').classList.remove('hidden');
+}
+function resizeImage(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const img=new Image();img.onerror=reject;img.onload=()=>{const size=360,scale=Math.min(1,size/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/webp',.82))};img.src=reader.result};reader.readAsDataURL(file)});}
+function saveEditedImage(){const map=imageEditorTarget.type==='team'?save.teamImages:save.playerImages,url=safeImageUrl($('#image-preview img')?.src||$('#image-url').value);if(!url)return alert('Bitte eine gültige HTTPS-Bildadresse oder Bilddatei wählen.');map[imageEditorTarget.id]=url;persist();$('#game-modal').classList.add('hidden');renderView('roster');}
 
 function normalizePlayerPositions(rosters){
   Object.values(rosters||{}).forEach(roster=>{
@@ -241,7 +253,7 @@ function showDashboard(){
   $('#team-switcher').classList.toggle('hidden',!save.controlAll); renderView('overview');
 }
 
-function setHeader(){const t=activeTeam();document.documentElement.style.setProperty('--team-accent',t.color);$('#welcome-title').textContent=`${save.manager} · ${t.abbr}`;$('#season-status').textContent=`${save.seasonLabel} · ${save.phase} · ${save.phase==='Regular Season'?`Spieltag ${Math.min(82,save.day+1)}`:''}`;$('#active-team-mark').innerHTML=`<span class="team-mark-badge">${t.abbr}</span><span>${fullName(t)}<small>${save.controlAll?'Alle Teams steuerbar':`Slot ${slot}`} · ${money(payroll(t.id))} Payroll</small></span>`;}
+function setHeader(){const t=activeTeam();document.documentElement.style.setProperty('--team-accent',t.color);$('#welcome-title').textContent=`${save.manager} · ${t.abbr}`;$('#season-status').textContent=`${save.seasonLabel} · ${save.phase} · ${save.phase==='Regular Season'?`Spieltag ${Math.min(82,save.day+1)}`:''}`;$('#active-team-mark').innerHTML=`${imageMarkup(save.teamImages?.[t.id],'team-mark-image',fullName(t),`<span class="team-mark-badge">${t.abbr}</span>`)}<span>${fullName(t)}<small>${save.controlAll?'Alle Teams steuerbar':`Slot ${slot}`} · ${money(payroll(t.id))} Payroll</small></span>`;}
 
 function renderView(view=currentView){currentView=view;setHeader();document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===view));const fn={overview:renderOverview,roster:renderRoster,rotation:renderRotation,tactics:renderTactics,schedule:renderSchedule,standings:renderStandings,transactions:renderTransactions,draft:renderDraft,league:renderLeague,playoffs:renderPlayoffs}[view]||renderOverview;fn();}
 
@@ -252,7 +264,7 @@ function renderOverview(){
   <div class="dash-grid"><div class="content-card"><div class="card-head"><h3>News Center</h3><span>Team & Liga</span></div>${[...save.news.slice(-4),...save.leagueNews.slice(-3)].slice(-7).reverse().map((n,i)=>`<p class="news-item"><span class="news-tag">${i<3?'AKTUELL':'LIGA'}</span>${n}</p>`).join('')}</div><div class="content-card"><h3>Nächstes Spiel</h3>${next?`<div class="next-game"><strong>${teamById(next.home).abbr}</strong><span class="versus">VS</span><strong>${teamById(next.away).abbr}</strong><p>Spieltag ${next.day+1}</p></div>`:`<p class="muted">Reguläre Saison beendet.</p>`}${save.lastGame?`<button class="text-button" id="last-boxscore">MATCH CENTER ÖFFNEN</button>`:''}</div></div>`;
 }
 
-function renderRoster(){const t=activeTeam(),roster=save.rosters[t.id].sort((a,b)=>b.rating-a.rating);let featured=roster.find(p=>p.id===selectedRosterPlayer)||roster[0];selectedRosterPlayer=featured.id;const avg=featured.stats.gp?(featured.stats.pts/featured.stats.gp).toFixed(1):'0.0';$('#view-content').innerHTML=`<div class="roster-viewer"><div class="viewer-team"><span class="viewer-abbr">${t.abbr}</span><strong>${fullName(t)}</strong><small>${t.conference} · ${roster.length} SPIELER</small></div><div class="viewer-player"><div class="player-avatar">${featured.number}</div><div class="ovr-ring"><small>OVR</small><strong>${featured.rating}</strong></div><div class="player-title"><span>#${featured.number} · ${featured.position}</span><h2>${featured.name}</h2><strong>${featured.starterSlot?`STARTER · ${featured.starterSlot}`:'ROTATIONSSPIELER'}</strong><small>${featured.age} Jahre · ${money(featured.salary)} · ${featured.years} Jahre</small></div><div class="player-state"><span>FORM <b>${featured.form>0?'+':''}${featured.form||0}</b></span><span>MORAL <b>${featured.morale||75}</b></span><span>PPG <b>${avg}</b></span></div></div></div><div class="viewer-tabs"><span>VIEW LIST</span><b>SIMPLE</b><span>DETAILS</span><span>VERTRAG</span><span>STATISTIK</span></div><div class="content-card roster-table"><div class="table-wrap"><table><thead><tr><th>NAME</th><th>POS</th><th>ALTER</th><th>RATING</th><th>POT</th><th>FORM</th><th>MIN</th><th>VERTRAG</th><th>STATUS</th><th>PPG</th></tr></thead><tbody>${roster.map(p=>`<tr data-roster-player="${p.id}" class="${p.id===featured.id?'selected-player':''}"><td><strong>${p.name}</strong></td><td>${p.position}</td><td>${p.age}</td><td class="rating">${p.rating}${p.form>0?' ▲':''}</td><td>${p.potential}</td><td>${p.form>0?'+':''}${p.form||0}</td><td>${p.minutes}</td><td title="${contractLabel(p)}">${p.twoWay?'Two-Way':`${money(p.salary)} · ${p.years}J`}</td><td>${p.injury>0?`<span class="bad">${p.injuryType}</span>`:'FIT'}</td><td>${p.stats.gp?(p.stats.pts/p.stats.gp).toFixed(1):'0.0'}</td></tr>`).join('')}</tbody></table></div></div>`;}
+function renderRoster(){const t=activeTeam(),roster=save.rosters[t.id].sort((a,b)=>b.rating-a.rating);let featured=roster.find(p=>p.id===selectedRosterPlayer)||roster[0];selectedRosterPlayer=featured.id;const avg=featured.stats.gp?(featured.stats.pts/featured.stats.gp).toFixed(1):'0.0',teamLogo=save.teamImages?.[t.id],portrait=save.playerImages?.[featured.id];$('#view-content').innerHTML=`<div class="roster-viewer"><div class="viewer-team">${imageMarkup(teamLogo,'viewer-logo',fullName(t),`<span class="viewer-abbr">${t.abbr}</span>`)}<strong>${fullName(t)}</strong><small>${t.conference} · ${roster.length} SPIELER</small><button class="image-edit-button" data-edit-team-image="${t.id}">TEAMLOGO ÄNDERN</button></div><div class="viewer-player"><div class="player-image-wrap">${imageMarkup(portrait,'player-portrait',featured.name,`<div class="player-avatar">${featured.number}</div>`)}<button class="image-edit-button player-image-button" data-edit-player-image="${featured.id}">BILD ÄNDERN</button></div><div class="ovr-ring"><small>OVR</small><strong>${featured.rating}</strong></div><div class="player-title"><span>#${featured.number} · ${featured.position}</span><h2>${featured.name}</h2><strong>${featured.starterSlot?`STARTER · ${featured.starterSlot}`:'ROTATIONSSPIELER'}</strong><small>${featured.age} Jahre · ${money(featured.salary)} · ${featured.years} Jahre</small></div><div class="player-state"><span>FORM <b>${featured.form>0?'+':''}${featured.form||0}</b></span><span>MORAL <b>${featured.morale||75}</b></span><span>PPG <b>${avg}</b></span></div></div></div><div class="viewer-tabs"><span>VIEW LIST</span><b>SIMPLE</b><span>DETAILS</span><span>VERTRAG</span><span>STATISTIK</span></div><div class="content-card roster-table"><div class="table-wrap"><table><thead><tr><th>NAME</th><th>POS</th><th>ALTER</th><th>RATING</th><th>POT</th><th>FORM</th><th>MIN</th><th>VERTRAG</th><th>STATUS</th><th>PPG</th></tr></thead><tbody>${roster.map(p=>`<tr data-roster-player="${p.id}" class="${p.id===featured.id?'selected-player':''}"><td><strong>${p.name}</strong></td><td>${p.position}</td><td>${p.age}</td><td class="rating">${p.rating}${p.form>0?' ▲':''}</td><td>${p.potential}</td><td>${p.form>0?'+':''}${p.form||0}</td><td>${p.minutes}</td><td title="${contractLabel(p)}">${p.twoWay?'Two-Way':`${money(p.salary)} · ${p.years}J`}</td><td>${p.injury>0?`<span class="bad">${p.injuryType}</span>`:'FIT'}</td><td>${p.stats.gp?(p.stats.pts/p.stats.gp).toFixed(1):'0.0'}</td></tr>`).join('')}</tbody></table></div></div>`;}
 
 function lineupWarnings(roster){
   const warnings=[];
@@ -421,6 +433,8 @@ document.addEventListener('click',e=>{
   const team=e.target.closest('.team-card');if(team)return setSelection(team.dataset.team);
   const load=e.target.closest('[data-load-slot]');if(load){slot=load.dataset.loadSlot;save=readSave(slot);return showDashboard()}
   const rosterPlayer=e.target.closest('[data-roster-player]');if(rosterPlayer){selectedRosterPlayer=rosterPlayer.dataset.rosterPlayer;return renderView('roster')}
+  const editTeamImage=e.target.closest('[data-edit-team-image]');if(editTeamImage){const t=teamById(editTeamImage.dataset.editTeamImage);return openImageEditor('team',t.id,`${fullName(t)} · Teamlogo`)}
+  const editPlayerImage=e.target.closest('[data-edit-player-image]');if(editPlayerImage){const p=save.rosters[save.activeTeam].find(x=>x.id===editPlayerImage.dataset.editPlayerImage);return openImageEditor('player',p.id,`${p.name} · Spielerbild`)}
   const sign=e.target.closest('[data-sign]');if(sign)return signPlayer(sign.dataset.sign);
   const scout=e.target.closest('[data-scout]');if(scout){const p=save.prospects.find(x=>x.id===scout.dataset.scout);p.scouted=true;save.scouting[p.id]=true;persist();return renderView('draft')}
   const benchUp=e.target.closest('[data-bench-up]');if(benchUp)return moveBenchPlayer(benchUp.dataset.benchUp,-1);
@@ -429,6 +443,8 @@ document.addEventListener('click',e=>{
   if(e.target.id==='sim-next')simulateDays(1);if(e.target.id==='sim-10')simulateDays(10);if(e.target.id==='finish-season')finishRegularSeason();if(e.target.id==='sim-playoffs')simulatePlayoffs();if(e.target.id==='run-draft')runDraft();if(e.target.id==='next-season')advanceSeason();if(e.target.id==='offer-trade')offerTrade();if(e.target.id==='last-boxscore')showBoxscore(findGameById(save.lastGame));
   if(e.target.id==='auto-rotation'){buildDefaultRotation(save.rosters[save.activeTeam]);persist();return renderView('rotation')}
   if(e.target.id==='save-tactics'){document.querySelectorAll('[data-tactic]').forEach(x=>save.tactics[save.activeTeam][x.dataset.tactic]=x.value);persist();alert('Taktik gespeichert.');return renderView('tactics')}
+  if(e.target.id==='save-image')return saveEditedImage();
+  if(e.target.id==='remove-image'){const map=imageEditorTarget.type==='team'?save.teamImages:save.playerImages;delete map[imageEditorTarget.id];persist();$('#game-modal').classList.add('hidden');return renderView('roster')}
   if(e.target.id==='save-rotation')return saveRotationSetup();
 });
 
@@ -437,6 +453,8 @@ $('#start-game').addEventListener('click',startCareer);
 $('#team-switcher').addEventListener('change',e=>{save.activeTeam=e.target.value;persist();renderView(currentView)});
 $('#trade-team')?.addEventListener('change',updateTradePlayers);
 $('#view-content').addEventListener('change',e=>{if(e.target.id==='trade-team')updateTradePlayers();if(e.target.classList.contains('starter-select'))updateLineupPreview();if(e.target.classList.contains('minute-input'))$('#minute-total').textContent=`${[...document.querySelectorAll('.minute-input')].reduce((s,x)=>s+Number(x.value),0)} / 240 Min.`});
+document.addEventListener('input',e=>{if(e.target.id==='image-url'){const url=safeImageUrl(e.target.value),preview=$('#image-preview');preview.innerHTML=url?`<img src="${url}" alt="Vorschau">`:'KEIN BILD'}});
+document.addEventListener('change',async e=>{if(e.target.id==='image-file'&&e.target.files[0]){try{const data=await resizeImage(e.target.files[0]);$('#image-preview').innerHTML=`<img src="${data}" alt="Vorschau">`}catch{alert('Das Bild konnte nicht verarbeitet werden.')}}});
 $('#save-game').addEventListener('click',()=>{persist();alert(`Karriere in Slot ${slot} gespeichert.`)});
 $('#new-career').addEventListener('click',()=>{persist();location.reload()});
 $('#close-modal').addEventListener('click',()=>$('#game-modal').classList.add('hidden'));
