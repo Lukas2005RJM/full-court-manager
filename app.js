@@ -35,6 +35,10 @@ const teams = teamData.map(([id,city,name,abbr,color,conference,strength,stars])
 const firstNames = ['Andre','Marcus','Jaylen','Devin','Jordan','Cameron','Isaiah','Malik','Darius','Jamal','Tyler','Aaron','Miles','Jaden','Xavier'];
 const lastNames = ['Williams','Johnson','Brown','Miller','Davis','Wilson','Moore','Taylor','Anderson','Thomas','Jackson','Martin','White','Harris','Walker'];
 const positions = ['PG','SG','SF','PF','C'];
+const leadGuards = new Set(`CJ McCollum Gabe Vincent Keaton Wallace RayJ Dennis Payton Pritchard Dalano Banton LaMelo Ball Coby White Tre Mann Anfernee Simons Josh Giddey Collin Sexton Tre Jones Rob Dillingham Yuki Kawamura Mac McClung Donovan Mitchell James Harden Dennis Schroder Craig Porter Jr. Kyrie Irving AJ Johnson Brandon Williams Ryan Nembhard Jamal Murray Jalen Pickett Tyus Jones Cade Cunningham Marcus Sasser Daniss Jenkins Stephen Curry Brandin Podziemski DeAnthony Melton Gary Payton II Seth Curry Pat Spencer Fred VanVleet Reed Sheppard Aaron Holiday JD Davison Tyrese Haliburton Andrew Nembhard T.J. McConnell Kam Jones Quenton Jackson Darius Garland Kris Dunn Bradley Beal Sean Pedulla TyTy Washington Jr. Luka Doncic Austin Reaves Marcus Smart Bronny James Ja Morant Ty Jerome Walter Clayton Scotty Pippen Jr. Javon Small Tyler Herro Davion Mitchell Kasparas Jakucionis Dru Smith Jahmir Young Trevor Keels Kevin Porter Jr. Ryan Rollins Mike Conley Bones Hyland Jordan Poole Dejounte Murray Jeremiah Fears Trey Alexander Jalen Brunson Jose Alvarado Miles McBride Jordan Clarkson Tyler Kolek Shai Gilgeous-Alexander Alex Caruso Cason Wallace Nikola Topic Jared McCain Ajay Mitchell Jalen Suggs Anthony Black Jevon Carter Tyrese Maxey Kyle Lowry Devin Booker Jalen Green Jordan Goodwin Collin Gillespie Scoot Henderson Damian Lillard Jrue Holiday Blake Wesley Caleb Love Zach LaVine Malik Monk Devin Carter Russell Westbrook Killian Hayes Isaiah Stevens DeAaron Fox Dylan Harper Stephon Castle Jordan McLaughlin Immanuel Quickley Jamal Shead Keyonte George Isaiah Collier Trae Young DAngelo Russell Bub Carrington Jaden Hardy Sharife Cooper`.split(' '));
+const centers = new Set(`Onyeka Okongwu Jock Landale Tony Bradley Christian Koloko Nikola Vucevic Luka Garza Neemias Queta Amari Williams Nic Claxton DayRon Sharpe Danny Wolf Ryan Kalkbrenner Moussa Diabate PJ Hall Zach Collins Jalen Smith Nick Richards Lachlan Olbrich Jarrett Allen Thomas Bryant Olivier Sarr Daniel Gafford Dereck Lively II Dwight Powell Marvin Bagley III Moussa Cisse Nikola Jokic Jonas Valanciunas Zeke Nnaji DaRon Holmes Isaiah Stewart Jalen Duren Paul Reed Isaac Jones Tolu Smith Kristaps Porzingis Al Horford Quinten Post Charles Bassey Alperen Sengun Steven Adams Clint Capela Ivica Zubac Jay Huff Micah Potter Brook Lopez Isaiah Jackson Yanic Konan Niederhauser Norchad Omier Deandre Ayton Maxi Kleber Jaxson Hayes Zach Edey Taj Gibson Bam Adebayo KelEl Ware Vladislav Goldin Myles Turner Bobby Portis Jericho Sims Rudy Gobert Naz Reid Joan Beringer Rocco Zikarsky Kevon Looney Derik Queen Yves Missi DeAndre Jordan Karlo Matkovic Hunter Dickinson Karl-Anthony Towns Mitchell Robinson Ariel Hukporti Trey Jemison Isaiah Hartenstein Chet Holmgren Thomas Sorber Wendell Carter Jr Goga Bitadze Moritz Wagner Colin Castleton Joel Embiid Andre Drummond Adem Bona Johni Broome Mark Williams Khaman Maluach Oso Ighodaro Robert Williams Donovan Clingan Yang Hansen Drew Eubanks Maxime Raynaud Dylan Cardwell Victor Wembanyama Luke Kornet Bismack Biyombo Mason Plumlee Jakob Poeltl Trayce Jackson-Davis Walker Kessler Jusuf Nurkic Kyle Filipowski Oscar Tshiebwe Anthony Davis Alex Sarr Tristan Vukcevic Julian Reese`.split(' '));
+const exactGuards = new Set(['CJ McCollum','Payton Pritchard','LaMelo Ball','Coby White','Anfernee Simons','Josh Giddey','Collin Sexton','Tre Jones','Donovan Mitchell','James Harden','Dennis Schroder','Kyrie Irving','Jamal Murray','Cade Cunningham','Stephen Curry','Brandin Podziemski','Fred VanVleet','Reed Sheppard','Tyrese Haliburton','Andrew Nembhard','T.J. McConnell','Darius Garland','Kris Dunn','Luka Doncic','Austin Reaves','Marcus Smart','Ja Morant','Ty Jerome','Scotty Pippen Jr.','Tyler Herro','Davion Mitchell','Kevin Porter Jr.','Ryan Rollins','Mike Conley','Jordan Poole','Dejounte Murray','Jeremiah Fears','Jalen Brunson','Jose Alvarado','Miles McBride','Shai Gilgeous-Alexander','Alex Caruso','Cason Wallace','Jared McCain','Ajay Mitchell','Jalen Suggs','Anthony Black','Tyrese Maxey','Kyle Lowry','Devin Booker','Jalen Green','Collin Gillespie','Jrue Holiday','Damian Lillard','Scoot Henderson','Zach LaVine','Malik Monk','Devin Carter','Russell Westbrook','DeAaron Fox','Dylan Harper','Stephon Castle','Immanuel Quickley','Jamal Shead','Keyonte George','Isaiah Collier','Trae Young','DAngelo Russell','Bub Carrington']);
+const exactCenters = new Set(['Onyeka Okongwu','Jock Landale','Nikola Vucevic','Neemias Queta','Nic Claxton','DayRon Sharpe','Ryan Kalkbrenner','Moussa Diabate','Zach Collins','Jalen Smith','Nick Richards','Evan Mobley','Jarrett Allen','Daniel Gafford','Dereck Lively II','Nikola Jokic','Jonas Valanciunas','Isaiah Stewart','Jalen Duren','Kristaps Porzingis','Al Horford','Alperen Sengun','Steven Adams','Clint Capela','Ivica Zubac','Brook Lopez','Isaiah Jackson','Deandre Ayton','Jaxson Hayes','Zach Edey','Bam Adebayo','KelEl Ware','Myles Turner','Bobby Portis','Rudy Gobert','Naz Reid','Kevon Looney','Derik Queen','Yves Missi','Karl-Anthony Towns','Mitchell Robinson','Isaiah Hartenstein','Chet Holmgren','Wendell Carter Jr.','Goga Bitadze','Moritz Wagner','Joel Embiid','Andre Drummond','Mark Williams','Khaman Maluach','Robert Williams','Donovan Clingan','Domantas Sabonis','Maxime Raynaud','Victor Wembanyama','Luke Kornet','Jakob Poeltl','Walker Kessler','Jusuf Nurkic','Anthony Davis','Alex Sarr']);
 const cap = 154.6;
 let selection = null;
 let slot = '1';
@@ -75,7 +79,35 @@ function makePlayer(name,i,team,index) {
   return {id:`${team.id}_${index}_${name.replace(/\W/g,'')}`,name,number:(index*7+team.strength)%56,position:positions[index%5],age,rating,potential:clamp(rating+(age<24?rand(4,10):rand(-2,3)),60,98),salary:Number((star?(rating-60)*0.9+4:rand(12,80)/10).toFixed(1)),years:rand(1,4),minutes:rotation[index]||0,fatigue:0,injury:0,training:'Ausgewogen',stats:{gp:0,pts:0,reb:0,ast:0,stl:0,blk:0}};
 }
 
-function fallbackRoster(team) { return team.stars.slice(0,15).map((n,i)=>makePlayer(n,i,team,i)); }
+function inferPosition(name,index) {
+  if (exactCenters.has(name)) return 'C';
+  if (exactGuards.has(name)) return index % 3 === 0 ? 'PG' : 'SG';
+  return index % 4 === 0 ? 'PF' : index % 3 === 0 ? 'SG' : 'SF';
+}
+
+function resetStats(){return {gp:0,pts:0,reb:0,ast:0,stl:0,blk:0};}
+
+function buildDefaultRotation(roster) {
+  roster.forEach(p=>p.minutes=0);
+  const rotation=roster.filter(p=>!p.twoWay).sort((a,b)=>b.rating-a.rating||a.age-b.age).slice(0,10);
+  const minutePlan=[36,34,32,30,28,22,19,16,13,10];
+  rotation.forEach((p,i)=>p.minutes=minutePlan[i]);
+  return roster;
+}
+
+function fallbackRoster(team) {
+  const entered=typeof STATIC_PLAYER_DATA!=='undefined' ? STATIC_PLAYER_DATA[team.id] : null;
+  if (!entered) return team.stars.map((n,i)=>makePlayer(n,i,team,i));
+  const roster=entered.map((data,i)=>{
+    const player=Object.assign(makePlayer(data.name,i,team,i),data);
+    player.position=data.position||inferPosition(data.name,i);
+    player.salaries=[...(data.salaries||Array(data.years||1).fill(data.salary))];
+    player.contractYear=0;
+    player.stats=resetStats();
+    return player;
+  });
+  return buildDefaultRotation(roster);
+}
 
 async function fetchRoster(team) {
   try {
@@ -118,16 +150,40 @@ function startCareer() {
   slot=$('#save-slot').value;
   const rosters={};
   const loaded=teams.map(fallbackRoster); teams.forEach((t,i)=>rosters[t.id]=loaded[i]);
-  save={version:4,slot,manager:$('#manager-name').value.trim()||'Coach',controlAll:selection==='all',activeTeam:selection==='all'?'atl':selection,season:1,seasonLabel:'2025/26',phase:'Regular Season',day:0,rosters,records:Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}])),schedule:generateSchedule(),freeAgents:makeFreeAgents(),prospects:generateProspects(),history:[],playoffs:null,lastGame:null,news:['Die neue NBA-Saison beginnt.'],trainingPoints:Object.fromEntries(teams.map(t=>[t.id,3]))};
+  save={version:6,slot,manager:$('#manager-name').value.trim()||'Coach',controlAll:selection==='all',activeTeam:selection==='all'?'atl':selection,season:1,seasonLabel:'2025/26',phase:'Regular Season',day:0,rosters,records:Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}])),schedule:generateSchedule(),freeAgents:makeFreeAgents(),prospects:generateProspects(),history:[],playoffs:null,lastGame:null,news:['Die neue NBA-Saison beginnt.'],trainingPoints:Object.fromEntries(teams.map(t=>[t.id,3]))};
   persist(); showDashboard();
 }
 
 function persist() { localStorage.setItem(saveKey(slot),JSON.stringify(save)); }
-function readSave(n) { try { const d=JSON.parse(localStorage.getItem(saveKey(n))); return d?.version===4?d:null; } catch{return null;} }
+function readSave(n) { try { const d=JSON.parse(localStorage.getItem(saveKey(n))); return d?.version===6?d:null; } catch{return null;} }
 function activeTeam(){return teamById(save.activeTeam);}
 function payroll(id){return save.rosters[id].reduce((s,p)=>s+p.salary,0);}
+function contractLabel(p){
+  if(p.twoWay)return 'Two-Way';
+  const years=(p.salaries||[p.salary]).map((x,i)=>`${2025+i}/${String(26+i).padStart(2,'0')}: ${money(x)}`).join(' · ');
+  const option=p.option?` · ${p.option==='Player'?'Spieleroption':'Teamoption'}`:'';
+  const guarantee=p.guaranteed===false?' · nicht garantiert':p.guaranteed!=null?` · garantiert ${money(p.guaranteed)}`:'';
+  return years+option+guarantee;
+}
 function healthyRoster(id){return save.rosters[id].filter(p=>p.injury<=0);}
-function teamPower(id){const r=healthyRoster(id).sort((a,b)=>b.minutes-a.minutes||b.rating-a.rating).slice(0,10);return r.reduce((s,p)=>s+p.rating*Math.max(8,p.minutes)*(1-p.fatigue/180),0)/r.reduce((s,p)=>s+Math.max(8,p.minutes),0);}
+function activeGameRotation(id){
+  const healthy=healthyRoster(id).sort((a,b)=>b.minutes-a.minutes||b.rating-a.rating);
+  const chosen=healthy.filter(p=>p.minutes>0).slice(0,10);
+  healthy.filter(p=>!chosen.includes(p)).slice(0,10-chosen.length).forEach(p=>chosen.push(p));
+  if(!chosen.length)return [];
+  const weights=chosen.map(p=>Math.max(8,p.minutes||12)*(0.72+p.rating/260));
+  const raw=weights.map(w=>240*w/weights.reduce((s,x)=>s+x,0));
+  const mins=raw.map(Math.floor);let left=240-mins.reduce((s,x)=>s+x,0);
+  raw.map((x,i)=>({i,f:x-mins[i]})).sort((a,b)=>b.f-a.f).slice(0,left).forEach(x=>mins[x.i]++);
+  return chosen.map((p,i)=>({player:p,minutes:mins[i]}));
+}
+function teamPower(id){
+  const rotation=activeGameRotation(id);if(!rotation.length)return 55;
+  const weighted=rotation.reduce((s,x)=>s+x.player.rating*x.minutes*(1-x.player.fatigue/260),0)/240;
+  const stars=rotation.slice().sort((a,b)=>b.player.rating-a.player.rating).slice(0,3).reduce((s,x)=>s+Math.max(0,x.player.rating-84),0)*.12;
+  const hasGuard=rotation.some(x=>['PG','SG'].includes(x.player.position)),hasBig=rotation.some(x=>['PF','C'].includes(x.player.position));
+  return weighted+stars-(hasGuard&&hasBig?0:2.5);
+}
 
 function showDashboard(){
   $('#setup-screen').classList.add('hidden'); $('#dashboard').classList.remove('hidden');
@@ -147,7 +203,7 @@ function renderOverview(){
   <div class="dash-grid"><div class="content-card"><h3>Team-News</h3>${save.news.slice(-6).reverse().map(n=>`<p class="news-item">${n}</p>`).join('')}</div><div class="content-card"><h3>Nächstes Spiel</h3>${next?`<div class="next-game"><strong>${teamById(next.home).abbr}</strong><span class="versus">VS</span><strong>${teamById(next.away).abbr}</strong><p>Spieltag ${next.day+1}</p></div>`:`<p class="muted">Reguläre Saison beendet.</p>`}${save.lastGame?`<button class="text-button" id="last-boxscore">Letzten Boxscore öffnen</button>`:''}</div></div>`;
 }
 
-function renderRoster(){const t=activeTeam();$('#view-content').innerHTML=`<div class="content-card"><div class="card-head"><h3>Kader · ${fullName(t)}</h3><span>${save.rosters[t.id].length}/15 Spieler · ${money(payroll(t.id))}</span></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Spieler</th><th>Pos</th><th>Alter</th><th>OVR</th><th>POT</th><th>Vertrag</th><th>Status</th><th>Schnitt</th></tr></thead><tbody>${save.rosters[t.id].sort((a,b)=>b.rating-a.rating).map(p=>`<tr><td>${p.number}</td><td><strong>${p.name}</strong></td><td>${p.position}</td><td>${p.age}</td><td class="rating">${p.rating}</td><td>${p.potential}</td><td>${money(p.salary)} · ${p.years}J</td><td>${p.injury>0?`<span class="bad">Verletzt (${p.injury})</span>`:`Fit · ${p.fatigue}%`}</td><td>${p.stats.gp?(p.stats.pts/p.stats.gp).toFixed(1):'0.0'} PPG</td></tr>`).join('')}</tbody></table></div></div>`;}
+function renderRoster(){const t=activeTeam();$('#view-content').innerHTML=`<div class="content-card"><div class="card-head"><h3>Kader · ${fullName(t)}</h3><span>${save.rosters[t.id].length} Spieler · ${money(payroll(t.id))}</span></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Spieler</th><th>Pos</th><th>Alter</th><th>OVR</th><th>POT</th><th>Vertrag</th><th>Status</th><th>Schnitt</th></tr></thead><tbody>${save.rosters[t.id].sort((a,b)=>b.rating-a.rating).map(p=>`<tr><td>${p.number}</td><td><strong>${p.name}</strong></td><td>${p.position}</td><td>${p.age}</td><td class="rating">${p.rating}</td><td>${p.potential}</td><td title="${contractLabel(p)}">${p.twoWay?'Two-Way':`${money(p.salary)} · ${p.years}J${p.option?` · ${p.option==='Player'?'PO':'TO'}`:''}`}</td><td>${p.injury>0?`<span class="bad">Verletzt (${p.injury})</span>`:`Fit · ${p.fatigue}%`}</td><td>${p.stats.gp?(p.stats.pts/p.stats.gp).toFixed(1):'0.0'} PPG</td></tr>`).join('')}</tbody></table></div><p class="muted">Fahre mit der Maus über einen Vertrag, um alle Jahresgehälter und Garantien zu sehen. PO = Spieleroption, TO = Teamoption.</p></div>`;}
 
 function renderRotation(){const t=activeTeam(),roster=save.rosters[t.id];$('#view-content').innerHTML=`<div class="split-grid"><div class="content-card"><div class="card-head"><h3>Rotation</h3><span id="minute-total">${roster.reduce((s,p)=>s+p.minutes,0)} / 240 Min.</span></div><p class="muted">Die verteilten Minuten beeinflussen Einsatzzeit, Müdigkeit und Entwicklung.</p>${roster.map(p=>`<div class="rotation-row"><span><strong>${p.name}</strong><small>${p.position} · OVR ${p.rating}</small></span><input class="minute-input" data-player="${p.id}" type="number" min="0" max="42" value="${p.minutes}"></div>`).join('')}<button class="primary-action" id="save-rotation">Rotation speichern</button></div><div class="content-card"><h3>Training · ${save.trainingPoints[t.id]} Punkte</h3><p class="muted">Pro Woche entstehen drei Trainingspunkte. Junge Spieler entwickeln sich schneller.</p>${roster.slice().sort((a,b)=>b.potential-b.rating-(a.potential-a.rating)).slice(0,8).map(p=>`<div class="training-row"><span><strong>${p.name}</strong><small>OVR ${p.rating} · POT ${p.potential}</small></span><select data-training="${p.id}"><option>Ausgewogen</option><option>Wurf</option><option>Defense</option><option>Athletik</option><option>Regeneration</option></select><button data-train="${p.id}">Trainieren</button></div>`).join('')}</div></div>`;}
 
@@ -158,7 +214,7 @@ function renderSchedule(){const games=gamesForTeam(save.activeTeam);const start=
 function conferenceStandings(conf){return teams.filter(t=>t.conference===conf).sort((a,b)=>{const ar=save.records[a.id],br=save.records[b.id];return br.wins-ar.wins||(br.pf-br.pa)-(ar.pf-ar.pa)});}
 function renderStandings(){const table=conf=>`<div class="content-card"><h3>${conf}ern Conference</h3>${conferenceStandings(conf).map((t,i)=>{const r=save.records[t.id];return`<div class="standing-row"><span class="number">${i+1}</span><strong>${fullName(t)}<small>${i<6?'Playoffs':i<10?'Play-in':'Lottery'}</small></strong><span>${r.wins}-${r.losses}</span></div>`}).join('')}</div>`;$('#view-content').innerHTML=`<div class="split-grid">${table('East')}${table('West')}</div>`;}
 
-function renderTransactions(){const t=activeTeam();const others=teams.filter(x=>x.id!==t.id);$('#view-content').innerHTML=`<div class="split-grid"><div class="content-card"><h3>Trade Center</h3><label>Dein Spieler</label><select id="trade-mine">${save.rosters[t.id].map(p=>`<option value="${p.id}">${p.name} · ${p.rating} · ${money(p.salary)}</option>`)}</select><label>Partner</label><select id="trade-team">${others.map(x=>`<option value="${x.id}">${fullName(x)}</option>`)}</select><label>Spieler des Partners</label><select id="trade-theirs"></select><button class="primary-action" id="offer-trade">Trade anbieten</button><p id="trade-result" class="muted"></p></div><div class="content-card"><h3>Free Agency</h3><p class="muted">Cap Space: ${money(cap-payroll(t.id))}</p>${save.freeAgents.slice(0,12).map(p=>`<div class="player-row"><span class="number">${p.position}</span><strong>${p.name}<small>OVR ${p.rating} · ${money(p.salary)}</small></strong><button data-sign="${p.id}" ${save.rosters[t.id].length>=15?'disabled':''}>Verpflichten</button></div>`).join('')||'<p>Keine Free Agents verfügbar.</p>'}</div></div>`;updateTradePlayers();}
+function renderTransactions(){const t=activeTeam();const others=teams.filter(x=>x.id!==t.id);$('#view-content').innerHTML=`<div class="split-grid"><div class="content-card"><h3>Trade Center</h3><label>Dein Spieler</label><select id="trade-mine">${save.rosters[t.id].map(p=>`<option value="${p.id}">${p.name} · ${p.rating} · ${money(p.salary)}</option>`)}</select><label>Partner</label><select id="trade-team">${others.map(x=>`<option value="${x.id}">${fullName(x)}</option>`)}</select><label>Spieler des Partners</label><select id="trade-theirs"></select><button class="primary-action" id="offer-trade">Trade anbieten</button><p id="trade-result" class="muted"></p></div><div class="content-card"><h3>Free Agency</h3><p class="muted">Cap Space: ${money(cap-payroll(t.id))} · ${standardRosterCount(save.rosters[t.id])}/15 Standardverträge</p>${save.freeAgents.slice(0,12).map(p=>`<div class="player-row"><span class="number">${p.position}</span><strong>${p.name}<small>OVR ${p.rating} · ${money(p.salary)}</small></strong><button data-sign="${p.id}" ${standardRosterCount(save.rosters[t.id])>=15?'disabled':''}>Verpflichten</button></div>`).join('')||'<p>Keine Free Agents verfügbar.</p>'}</div></div>`;updateTradePlayers();}
 
 function renderDraft(){const order=draftOrder();$('#view-content').innerHTML=`<div class="split-grid"><div class="content-card"><h3>Draft Board</h3><p class="muted">Der Draft findet nach den Playoffs statt. Reihenfolge aktuell nach Bilanz.</p>${save.prospects.slice(0,15).map((p,i)=>`<div class="player-row"><span class="number">${i+1}</span><strong>${p.name}<small>${p.position} · ${p.age} Jahre · POT ${p.potential}</small></strong><span class="rating">${p.rating}</span></div>`).join('')}</div><div class="content-card"><h3>Aktuelle Draft-Reihenfolge</h3>${order.slice(0,15).map((t,i)=>`<div class="standing-row"><span class="number">${i+1}</span><strong>${fullName(t)}</strong><span>${save.records[t.id].wins} Siege</span></div>`).join('')}${save.phase==='Offseason'?'<button class="primary-action" id="run-draft">Draft durchführen</button>':''}</div></div>`;}
 
@@ -171,7 +227,22 @@ function simulateGame(game,playoff=false){
   return hs>as?game.home:game.away;
 }
 
-function playerBox(id,score){const roster=save.rosters[id],available=roster.filter(p=>p.injury<=0&&p.minutes>0);let remaining=score;return available.map((p,i)=>{const share=(p.rating*p.minutes)/available.reduce((s,x)=>s+x.rating*x.minutes,0);let pts=i===available.length-1?remaining:Math.max(0,Math.round(score*share+rand(-3,3)));pts=Math.min(remaining,pts);remaining-=pts;const line={id:p.id,name:p.name,min:p.minutes,pts,reb:rand(1,Math.max(2,Math.round(p.minutes/4))),ast:rand(0,Math.max(1,Math.round(p.minutes/5))),stl:rand(0,3),blk:rand(0,p.position==='C'?4:2)};p.stats.gp++;p.stats.pts+=pts;p.stats.reb+=line.reb;p.stats.ast+=line.ast;p.stats.stl+=line.stl;p.stats.blk+=line.blk;p.fatigue=clamp(p.fatigue+Math.round(p.minutes/7),0,100);if(Math.random()<.008+p.fatigue/3500){p.injury=rand(2,12);save.news.push(`${p.name} fällt voraussichtlich ${p.injury} Spiele aus.`)}return line;});}
+function playerBox(id,score){
+  const rotation=activeGameRotation(id);
+  const role={PG:{usage:1.08,reb:.65,ast:1.65,blk:.25},SG:{usage:1.12,reb:.75,ast:1.05,blk:.35},SF:{usage:1.02,reb:1,ast:.8,blk:.55},PF:{usage:.94,reb:1.35,ast:.55,blk:1},C:{usage:.9,reb:1.65,ast:.45,blk:1.55}};
+  const weights=rotation.map(x=>Math.max(1,(x.player.rating-61)**1.55)*x.minutes*role[x.player.position].usage*(.88+Math.random()*.24));
+  const total=weights.reduce((s,x)=>s+x,0)||1;
+  const raw=weights.map(w=>score*w/total),points=raw.map(Math.floor);let left=score-points.reduce((s,x)=>s+x,0);
+  raw.map((x,i)=>({i,f:x-points[i]})).sort((a,b)=>b.f-a.f).slice(0,left).forEach(x=>points[x.i]++);
+  return rotation.map((x,i)=>{
+    const p=x.player,r=role[p.position],minutes=x.minutes;
+    const line={id:p.id,name:p.name,min:minutes,pts:points[i],reb:Math.max(0,Math.round(minutes/5.7*r.reb+rand(-2,2))),ast:Math.max(0,Math.round(minutes/8*r.ast+(p.rating-75)/14+rand(-2,2))),stl:Math.max(0,Math.round(minutes/28+(p.rating-75)/25+rand(-1,1))),blk:Math.max(0,Math.round(minutes/30*r.blk+(p.rating-75)/30+rand(-1,1)))};
+    p.stats.gp++;p.stats.pts+=line.pts;p.stats.reb+=line.reb;p.stats.ast+=line.ast;p.stats.stl+=line.stl;p.stats.blk+=line.blk;
+    p.fatigue=clamp(p.fatigue+Math.round(minutes/9),0,100);
+    if(Math.random()<.003+p.fatigue/9000){p.injury=rand(1,10);save.news.push(`${p.name} fällt voraussichtlich ${p.injury} Spiele aus.`)}
+    return line;
+  });
+}
 
 function recoverPlayers(){teams.forEach(t=>save.rosters[t.id].forEach(p=>{p.fatigue=clamp(p.fatigue-3,0,100);if(p.injury>0)p.injury--}));}
 function simulateDay(){if(save.day>=82){setupPostseason();return;}const games=save.schedule[save.day];games.forEach(g=>simulateGame(g));const mine=games.find(g=>g.home===save.activeTeam||g.away===save.activeTeam);save.lastGame=mine?.id||save.lastGame;save.day++;recoverPlayers();if(save.day%7===0)teams.forEach(t=>save.trainingPoints[t.id]+=3);if(mine)save.news.push(`${teamById(mine.home).abbr} ${mine.homeScore}:${mine.awayScore} ${teamById(mine.away).abbr}`);if(save.day>=82)setupPostseason();persist();}
@@ -185,14 +256,40 @@ function runPlayIn(){['East','West'].forEach(c=>{const s=conferenceStandings(c),
 function simulatePlayoffs(){const champs={};['East','West'].forEach(c=>{let b=save.playoffs[c];let r1=[series(b[0],b[1],`${c} Runde 1`),series(b[2],b[3],`${c} Runde 1`),series(b[4],b[5],`${c} Runde 1`),series(b[6],b[7],`${c} Runde 1`)];let r2=[series(r1[0],r1[1],`${c} Halbfinale`),series(r1[2],r1[3],`${c} Halbfinale`)];champs[c]=series(r2[0],r2[1],`${c} Finals`)});const champion=series(champs.East,champs.West,'NBA Finals');save.playoffs.champion=champion;save.phase='Offseason';save.history.push({season:save.seasonLabel,champion});save.news.push(`${fullName(teamById(champion))} sind NBA-Champion!`);persist();renderView('playoffs');}
 
 function draftOrder(){return [...teams].sort((a,b)=>save.records[a.id].wins-save.records[b.id].wins);}
-function runDraft(){draftOrder().forEach((t,i)=>{const p=save.prospects[i];if(!p)return;const roster=save.rosters[t.id];if(roster.length>=15){const cut=roster.sort((a,b)=>a.rating-b.rating)[0];save.freeAgents.push(cut);roster.splice(roster.indexOf(cut),1)}roster.push({...p,id:`${t.id}_${p.id}`});});save.prospects=[];save.news.push('Der NBA Draft wurde durchgeführt.');persist();renderView('draft');}
-function advanceSeason(){if(save.prospects.length)runDraft();teams.forEach(t=>{save.rosters[t.id].forEach(p=>{p.age++;p.years--;const growth=p.age<27?Math.min(rand(0,2),p.potential-p.rating):p.age>31?-rand(0,2):0;p.rating=clamp(p.rating+growth,55,99);p.fatigue=0;p.injury=0;p.stats={gp:0,pts:0,reb:0,ast:0,stl:0,blk:0}});const expired=save.rosters[t.id].filter(p=>p.years<=0);expired.forEach(p=>{p.years=1;save.freeAgents.push(p)});save.rosters[t.id]=save.rosters[t.id].filter(p=>!expired.includes(p));});save.season++;save.seasonLabel=`${2024+save.season}/${String(25+save.season).padStart(2,'0')}`;save.phase='Regular Season';save.day=0;save.records=Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}]));save.schedule=generateSchedule();save.prospects=generateProspects(save.season);save.playoffs=null;save.lastGame=null;persist();renderView('overview');}
+function standardRosterCount(roster){return roster.filter(p=>!p.twoWay).length;}
+function runDraft(){draftOrder().forEach((t,i)=>{const p=save.prospects[i];if(!p)return;const roster=save.rosters[t.id];if(standardRosterCount(roster)>=15){const cut=roster.filter(x=>!x.twoWay).sort((a,b)=>a.rating-b.rating||b.age-a.age)[0];save.freeAgents.push(cut);roster.splice(roster.indexOf(cut),1)}roster.push({...p,id:`${t.id}_${p.id}`,salaries:Array(4).fill(p.salary),contractYear:0,stats:resetStats()});buildDefaultRotation(roster);});save.prospects=[];save.news.push('Der NBA Draft wurde durchgeführt.');persist();renderView('draft');}
+function optionAccepted(p,nextSalary){const market=Math.max(2,(p.rating-68)*1.8+(p.potential-p.rating)*.5);return p.option==='Player'?nextSalary>=market*.72:market>=nextSalary*.72;}
+function advanceSeason(){
+  if(save.prospects.length)runDraft();
+  teams.forEach(t=>{
+    const returning=[];
+    save.rosters[t.id].forEach(p=>{
+      p.age++;const growth=p.age<25?Math.min(rand(0,2),p.potential-p.rating):p.age>32?-rand(0,2):p.rating<p.potential&&Math.random()<.25?1:0;
+      p.rating=clamp(p.rating+growth,55,99);p.fatigue=0;p.injury=0;p.stats=resetStats();
+      const salaries=p.salaries||Array(p.years||1).fill(p.salary),next=(p.contractYear||0)+1;
+      const optionDeclined=p.option&&next===salaries.length-1&&!optionAccepted(p,salaries[next]);
+      if(next>=salaries.length||optionDeclined){p.years=1;p.minutes=0;p.salary=Math.max(1,Number(((p.rating-68)*1.25+2).toFixed(1)));p.salaries=[p.salary];p.contractYear=0;p.option=null;save.freeAgents.push(p);}
+      else{p.contractYear=next;p.salary=salaries[next];p.years=salaries.length-next;returning.push(p)}
+    });
+    save.rosters[t.id]=buildDefaultRotation(returning);
+  });
+  teams.forEach(t=>{
+    const roster=save.rosters[t.id];
+    while(standardRosterCount(roster)<15&&save.freeAgents.length){
+      save.freeAgents.sort((a,b)=>b.rating-a.rating||a.age-b.age);
+      const p=save.freeAgents.shift();
+      p.twoWay=false;p.years=1;p.contractYear=0;p.salaries=[p.salary];p.minutes=0;p.stats=resetStats();roster.push(p);
+    }
+    buildDefaultRotation(roster);
+  });
+  save.season++;save.seasonLabel=`${2024+save.season}/${String(25+save.season).padStart(2,'0')}`;save.phase='Regular Season';save.day=0;save.records=Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}]));save.schedule=generateSchedule();save.prospects=generateProspects(save.season);save.playoffs=null;save.lastGame=null;persist();renderView('overview');
+}
 
 function showBoxscore(game){if(!game)return;const rows=(id,lines)=>`<h3>${fullName(teamById(id))}</h3><table><thead><tr><th>Spieler</th><th>MIN</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th></tr></thead><tbody>${lines.map(x=>`<tr><td>${x.name}</td><td>${x.min}</td><td>${x.pts}</td><td>${x.reb}</td><td>${x.ast}</td><td>${x.stl}</td><td>${x.blk}</td></tr>`).join('')}</tbody></table>`;$('#modal-content').innerHTML=`<h2>BOX SCORE · ${game.homeScore}:${game.awayScore}</h2><div class="table-wrap">${rows(game.home,game.box.home)}${rows(game.away,game.box.away)}</div>`;$('#game-modal').classList.remove('hidden');}
 function findGameById(id){return save.schedule.flat().find(g=>g.id===id);}
 function updateTradePlayers(){const el=$('#trade-team'),target=$('#trade-theirs');if(!el||!target)return;target.innerHTML=save.rosters[el.value].map(p=>`<option value="${p.id}">${p.name} · ${p.rating} · ${money(p.salary)}</option>`).join('');}
 function offerTrade(){const mine=save.rosters[save.activeTeam].find(p=>p.id===$('#trade-mine').value),otherId=$('#trade-team').value,theirs=save.rosters[otherId].find(p=>p.id===$('#trade-theirs').value);const valueMine=mine.rating+(mine.potential-mine.rating)*.45-mine.age*.08,valueTheirs=theirs.rating+(theirs.potential-theirs.rating)*.45-theirs.age*.08;const salaryOk=Math.max(mine.salary,theirs.salary)<=Math.min(mine.salary,theirs.salary)*1.35+5;if(valueMine+rand(-3,3)>=valueTheirs&&salaryOk){save.rosters[save.activeTeam]=save.rosters[save.activeTeam].filter(p=>p.id!==mine.id);save.rosters[otherId]=save.rosters[otherId].filter(p=>p.id!==theirs.id);save.rosters[save.activeTeam].push(theirs);save.rosters[otherId].push(mine);save.news.push(`Trade: ${theirs.name} kommt für ${mine.name}.`);persist();renderView('transactions')}else $('#trade-result').textContent=salaryOk?'Das andere Team lehnt den sportlichen Gegenwert ab.':'Trade abgelehnt: Gehälter passen nicht zusammen.';}
-function signPlayer(id){const p=save.freeAgents.find(x=>x.id===id);if(!p)return;const roster=save.rosters[save.activeTeam];if(roster.length>=15||payroll(save.activeTeam)+p.salary>cap+10){alert('Kein Kaderplatz oder Cap Space verfügbar.');return}roster.push(p);save.freeAgents=save.freeAgents.filter(x=>x.id!==id);save.news.push(`${p.name} unterschreibt für ${money(p.salary)}.`);persist();renderView('transactions');}
+function signPlayer(id){const p=save.freeAgents.find(x=>x.id===id);if(!p)return;const roster=save.rosters[save.activeTeam];if(standardRosterCount(roster)>=15||payroll(save.activeTeam)+p.salary>cap+10){alert('Kein Kaderplatz oder Cap Space verfügbar.');return}p.twoWay=false;p.salaries=[p.salary];p.contractYear=0;roster.push(p);buildDefaultRotation(roster);save.freeAgents=save.freeAgents.filter(x=>x.id!==id);save.news.push(`${p.name} unterschreibt für ${money(p.salary)}.`);persist();renderView('transactions');}
 
 document.addEventListener('click',e=>{
   const nav=e.target.closest('.nav-item');if(nav)return renderView(nav.dataset.view);
