@@ -8,13 +8,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=12">
+  <link rel="stylesheet" href="styles.css?v=13">
 </head>
 <body>
   <div class="noise"></div>
   <header class="topbar">
-    <a class="brand" href="#">FULL<span>COURT</span></a>
-    <div class="season-chip">NBA · KADERSTAND 13. JUNI 2026</div>
+    <a class="brand" href="#">FULL<span>COURT</span> <small>MANAGER</small></a>
+    <div class="season-chip">PRO BASKETBALL · 2025/26</div>
   </header>
   <main>
     <section id="setup-screen" class="setup-screen">
@@ -29,7 +29,6 @@
         <button id="all-teams" class="all-teams-card" type="button"><span class="all-icon">◎</span><span><strong>ALLE TEAMS VERWALTEN</strong><small>Volle Kontrolle über Transfers, Aufstellungen und Taktiken der gesamten Liga.</small></span><span class="check">✓</span></button>
         <div class="divider"><span>ODER WÄHLE EIN TEAM</span></div>
         <div id="team-grid" class="team-grid"></div>
-        <div class="theme-picker"><p class="step">SCHRITT 02 · DESIGN</p><div class="theme-options"><button type="button" class="theme-card selected" data-theme-choice="arena"><span class="theme-preview arena-preview"><i></i><i></i><i></i></span><strong>ARENA</strong><small>Kräftig, dynamisch, Game-Menü</small><b>✓</b></button><button type="button" class="theme-card" data-theme-choice="broadcast"><span class="theme-preview broadcast-preview"><i></i><i></i><i></i></span><strong>BROADCAST</strong><small>Professionell, klar, TV-Statistik</small><b>✓</b></button></div></div>
         <div class="manager-row"><label for="manager-name">Managername</label><input id="manager-name" maxlength="24" value="Coach" autocomplete="off"></div>
         <div class="manager-row"><label for="save-slot">Speicherplatz</label><select id="save-slot"><option value="1">Slot 1</option><option value="2">Slot 2</option><option value="3">Slot 3</option></select></div>
         <button id="start-game" class="start-button" type="button" disabled>KARRIERE STARTEN <span>→</span></button>
@@ -54,13 +53,13 @@
         <button id="new-career" class="new-career">Karriere wechseln</button>
       </aside>
       <div class="dashboard-content">
-        <div class="dash-head"><div><p class="eyebrow">MANAGER-ZENTRALE</p><h2 id="welcome-title"></h2><p id="season-status" class="muted"></p></div><div class="head-controls"><div class="theme-toggle"><button type="button" data-theme-switch="arena">ARENA</button><button type="button" data-theme-switch="broadcast">TV</button></div><select id="team-switcher" class="team-switcher"></select></div></div>
+        <div class="dash-head"><div><p class="eyebrow">FRANCHISE CONTROL CENTER</p><h2 id="welcome-title"></h2><p id="season-status" class="muted"></p></div><div class="head-controls"><select id="team-switcher" class="team-switcher"></select></div></div>
         <div id="view-content"></div>
       </div>
     </section>
   </main>
   <div id="game-modal" class="modal hidden"><div class="modal-card"><button id="close-modal" class="modal-close">×</button><div id="modal-content"></div></div></div>
-  <script src="rosters.js?v=12"></script>
-  <script src="app.js?v=12"></script>
+  <script src="rosters.js?v=13"></script>
+  <script src="app.js?v=13"></script>
 </body>
 </html>

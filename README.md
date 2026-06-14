@@ -6,7 +6,7 @@ Ein browserbasiertes NBA-Manager-Spiel mit allen 30 Teams.
 
 - 30 manuell erfasste NBA-Kader mit insgesamt 527 eindeutigen Spielern
 - moderne responsive Manager-Oberfläche mit dynamischen Teamfarben
-- zwei jederzeit wechselbare Designs: Arena und Broadcast
+- kompakte Roster-Viewer-Oberfläche mit dunklem Metall-Look und gelber Fokusauswahl
 - mehrjährige Gehaltsstaffeln, Garantien, Spieleroptionen, Teamoptionen und Two-Way-Verträge
 - drei getrennte Karriere-Speicherplätze
 - 82-Spiele-Saison, rollenbasierte Match-Simulation und vollständige Boxscores
