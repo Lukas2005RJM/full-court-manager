@@ -767,3 +767,13 @@ th, td { padding: 12px 11px; }
 @media (max-width: 1050px) {
   .dashboard > .sidebar { grid-template-columns: 165px minmax(0,1fr) !important; }
 }
+
+/* Interactive roster tabs */
+.viewer-tabs button { min-height: 34px; padding: 8px 18px; color: #d5dadd; border: 0; border-bottom: 2px solid transparent; background: transparent; font-size: 10px; font-weight: 800; cursor: pointer; }
+.viewer-tabs button:hover { color: white; background: rgba(255,255,255,.06); }
+.viewer-tabs button.active { color: #111; border-bottom-color: #dfff00; background: #f3f4f4; }
+.viewer-tabs button:focus-visible { outline: 2px solid #dfff00; outline-offset: -2px; }
+.roster-table td .rating { color: inherit; }
+@media (max-width: 760px) {
+  .viewer-tabs button { flex: 0 0 auto; padding: 8px 14px; }
+}
