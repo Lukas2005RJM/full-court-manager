@@ -8,7 +8,8 @@ Ein browserbasiertes NBA-Manager-Spiel mit allen 30 Teams.
 - mehrjährige Gehaltsstaffeln, Garantien, Spieleroptionen, Teamoptionen und Two-Way-Verträge
 - drei getrennte Karriere-Speicherplätze
 - 82-Spiele-Saison, rollenbasierte Match-Simulation und vollständige Boxscores
-- automatische 240-Minuten-Rotationen, Spielminuten, Training, Müdigkeit und Verletzungen
+- manuelle Starting Five und Bankreihenfolge, automatische 240-Minuten-Rotation als Option
+- positionsgerechte Ersatzspieler, Training, Müdigkeit und Verletzungen
 - Trades, Free Agency, Verträge und Salary Cap
 - Tabellen für Eastern und Western Conference
 - Play-in-Turnier, Best-of-Seven-Playoffs und NBA Finals

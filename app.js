@@ -35,6 +35,7 @@ const teams = teamData.map(([id,city,name,abbr,color,conference,strength,stars])
 const firstNames = ['Andre','Marcus','Jaylen','Devin','Jordan','Cameron','Isaiah','Malik','Darius','Jamal','Tyler','Aaron','Miles','Jaden','Xavier'];
 const lastNames = ['Williams','Johnson','Brown','Miller','Davis','Wilson','Moore','Taylor','Anderson','Thomas','Jackson','Martin','White','Harris','Walker'];
 const positions = ['PG','SG','SF','PF','C'];
+const positionByName = Object.fromEntries(Object.keys(STATIC_ROSTERS).flatMap(teamId=>STATIC_ROSTERS[teamId].map((name,i)=>[name,STATIC_POSITIONS[teamId][i]])));
 const cap = 154.6;
 let selection = null;
 let slot = '1';
@@ -77,11 +78,45 @@ function makePlayer(name,i,team,index) {
 
 function resetStats(){return {gp:0,pts:0,reb:0,ast:0,stl:0,blk:0};}
 
+function normalizePlayerPositions(rosters){
+  Object.values(rosters||{}).forEach(roster=>{
+    roster.forEach(p=>{if(positionByName[p.name])p.position=positionByName[p.name]});
+    normalizeRotationSetup(roster);
+  });
+  return rosters;
+}
+
+const starterSlots=['PG','SG','SF','PF','C'];
+const slotPositions={PG:['PG','G'],SG:['SG','G','GF'],SF:['SF','GF','F'],PF:['PF','F','FC'],C:['C','FC']};
+const fitsSlot=(position,slot)=>slotPositions[slot].includes(position);
+
+function chooseStartingFive(roster){
+  const available=roster.filter(p=>!p.twoWay).sort((a,b)=>b.rating-a.rating||a.age-b.age),chosen=[];
+  return starterSlots.map(slot=>{
+    const player=available.find(p=>!chosen.includes(p)&&fitsSlot(p.position,slot))||available.find(p=>!chosen.includes(p));
+    if(player)chosen.push(player);
+    return player;
+  });
+}
+
+function normalizeRotationSetup(roster){
+  const validStarters=roster.filter(p=>starterSlots.includes(p.starterSlot));
+  if(validStarters.length!==5||new Set(validStarters.map(p=>p.starterSlot)).size!==5){
+    roster.forEach(p=>p.starterSlot=null);
+    chooseStartingFive(roster).forEach((p,i)=>{if(p)p.starterSlot=starterSlots[i]});
+  }
+  roster.slice().sort((a,b)=>(a.rotationOrder??999)-(b.rotationOrder??999)||b.rating-a.rating).forEach((p,i)=>p.rotationOrder=i);
+  return roster;
+}
+
 function buildDefaultRotation(roster) {
-  roster.forEach(p=>p.minutes=0);
-  const rotation=roster.filter(p=>!p.twoWay).sort((a,b)=>b.rating-a.rating||a.age-b.age).slice(0,10);
+  roster.forEach(p=>{p.minutes=0;p.starterSlot=null});
+  const starters=chooseStartingFive(roster);
+  starters.forEach((p,i)=>{if(p)p.starterSlot=starterSlots[i]});
+  const rotation=[...starters,...roster.filter(p=>!p.twoWay&&!starters.includes(p)).sort((a,b)=>b.rating-a.rating||a.age-b.age)].filter(Boolean).slice(0,10);
   const minutePlan=[36,34,32,30,28,22,19,16,13,10];
-  rotation.forEach((p,i)=>p.minutes=minutePlan[i]);
+  rotation.forEach((p,i)=>{p.minutes=minutePlan[i];p.rotationOrder=i});
+  roster.filter(p=>!rotation.includes(p)).forEach((p,i)=>p.rotationOrder=rotation.length+i);
   return roster;
 }
 
@@ -90,7 +125,7 @@ function fallbackRoster(team) {
   if (!entered) return team.stars.map((n,i)=>makePlayer(n,i,team,i));
   const roster=entered.map((data,i)=>{
     const player=Object.assign(makePlayer(data.name,i,team,i),data);
-    player.position=STATIC_POSITIONS[team.id]?.[i]||data.position||positions[i%5];
+    player.position=positionByName[data.name]||data.position||positions[i%5];
     player.salaries=[...(data.salaries||Array(data.years||1).fill(data.salary))];
     player.contractYear=0;
     player.stats=resetStats();
@@ -140,12 +175,12 @@ function startCareer() {
   slot=$('#save-slot').value;
   const rosters={};
   const loaded=teams.map(fallbackRoster); teams.forEach((t,i)=>rosters[t.id]=loaded[i]);
-  save={version:7,slot,manager:$('#manager-name').value.trim()||'Coach',controlAll:selection==='all',activeTeam:selection==='all'?'atl':selection,season:1,seasonLabel:'2025/26',phase:'Regular Season',day:0,rosters,records:Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}])),schedule:generateSchedule(),freeAgents:makeFreeAgents(),prospects:generateProspects(),history:[],playoffs:null,lastGame:null,news:['Die neue NBA-Saison beginnt.'],trainingPoints:Object.fromEntries(teams.map(t=>[t.id,3]))};
+  save={version:9,slot,manager:$('#manager-name').value.trim()||'Coach',controlAll:selection==='all',activeTeam:selection==='all'?'atl':selection,season:1,seasonLabel:'2025/26',phase:'Regular Season',day:0,rosters:normalizePlayerPositions(rosters),records:Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}])),schedule:generateSchedule(),freeAgents:makeFreeAgents(),prospects:generateProspects(),history:[],playoffs:null,lastGame:null,news:['Die neue NBA-Saison beginnt.'],trainingPoints:Object.fromEntries(teams.map(t=>[t.id,3]))};
   persist(); showDashboard();
 }
 
 function persist() { localStorage.setItem(saveKey(slot),JSON.stringify(save)); }
-function readSave(n) { try { const d=JSON.parse(localStorage.getItem(saveKey(n))); return d?.version===7?d:null; } catch{return null;} }
+function readSave(n) { try { const d=JSON.parse(localStorage.getItem(saveKey(n)));if(!d||d.version<5)return null;d.rosters=normalizePlayerPositions(d.rosters);d.version=9;return d; } catch{return null;} }
 function activeTeam(){return teamById(save.activeTeam);}
 function payroll(id){return save.rosters[id].reduce((s,p)=>s+p.salary,0);}
 function contractLabel(p){
@@ -157,9 +192,16 @@ function contractLabel(p){
 }
 function healthyRoster(id){return save.rosters[id].filter(p=>p.injury<=0);}
 function activeGameRotation(id){
-  const healthy=healthyRoster(id).sort((a,b)=>b.minutes-a.minutes||b.rating-a.rating);
-  const chosen=healthy.filter(p=>p.minutes>0).slice(0,10);
-  healthy.filter(p=>!chosen.includes(p)).slice(0,10-chosen.length).forEach(p=>chosen.push(p));
+  const roster=save.rosters[id],healthy=healthyRoster(id),chosen=[];
+  const bench=healthy.filter(p=>!p.starterSlot).sort((a,b)=>(a.rotationOrder??99)-(b.rotationOrder??99)||b.rating-a.rating);
+  starterSlots.forEach(slot=>{
+    const starter=healthy.find(p=>p.starterSlot===slot);
+    if(starter)return chosen.push(starter);
+    const replacement=bench.find(p=>!chosen.includes(p)&&fitsSlot(p.position,slot))||bench.find(p=>!chosen.includes(p));
+    if(replacement)chosen.push(replacement);
+  });
+  bench.filter(p=>p.minutes>0&&!chosen.includes(p)).slice(0,10-chosen.length).forEach(p=>chosen.push(p));
+  healthy.filter(p=>!chosen.includes(p)).sort((a,b)=>b.rating-a.rating).slice(0,10-chosen.length).forEach(p=>chosen.push(p));
   if(!chosen.length)return [];
   const weights=chosen.map(p=>Math.max(8,p.minutes||12)*(0.72+p.rating/260));
   const raw=weights.map(w=>240*w/weights.reduce((s,x)=>s+x,0));
@@ -195,7 +237,46 @@ function renderOverview(){
 
 function renderRoster(){const t=activeTeam();$('#view-content').innerHTML=`<div class="content-card"><div class="card-head"><h3>Kader · ${fullName(t)}</h3><span>${save.rosters[t.id].length} Spieler · ${money(payroll(t.id))}</span></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Spieler</th><th>Pos</th><th>Alter</th><th>OVR</th><th>POT</th><th>Vertrag</th><th>Status</th><th>Schnitt</th></tr></thead><tbody>${save.rosters[t.id].sort((a,b)=>b.rating-a.rating).map(p=>`<tr><td>${p.number}</td><td><strong>${p.name}</strong></td><td>${p.position}</td><td>${p.age}</td><td class="rating">${p.rating}</td><td>${p.potential}</td><td title="${contractLabel(p)}">${p.twoWay?'Two-Way':`${money(p.salary)} · ${p.years}J${p.option?` · ${p.option==='Player'?'PO':'TO'}`:''}`}</td><td>${p.injury>0?`<span class="bad">Verletzt (${p.injury})</span>`:`Fit · ${p.fatigue}%`}</td><td>${p.stats.gp?(p.stats.pts/p.stats.gp).toFixed(1):'0.0'} PPG</td></tr>`).join('')}</tbody></table></div><p class="muted">Fahre mit der Maus über einen Vertrag, um alle Jahresgehälter und Garantien zu sehen. PO = Spieleroption, TO = Teamoption.</p></div>`;}
 
-function renderRotation(){const t=activeTeam(),roster=save.rosters[t.id];$('#view-content').innerHTML=`<div class="split-grid"><div class="content-card"><div class="card-head"><h3>Rotation</h3><span id="minute-total">${roster.reduce((s,p)=>s+p.minutes,0)} / 240 Min.</span></div><p class="muted">Die verteilten Minuten beeinflussen Einsatzzeit, Müdigkeit und Entwicklung.</p>${roster.map(p=>`<div class="rotation-row"><span><strong>${p.name}</strong><small>${p.position} · OVR ${p.rating}</small></span><input class="minute-input" data-player="${p.id}" type="number" min="0" max="42" value="${p.minutes}"></div>`).join('')}<button class="primary-action" id="save-rotation">Rotation speichern</button></div><div class="content-card"><h3>Training · ${save.trainingPoints[t.id]} Punkte</h3><p class="muted">Pro Woche entstehen drei Trainingspunkte. Junge Spieler entwickeln sich schneller.</p>${roster.slice().sort((a,b)=>b.potential-b.rating-(a.potential-a.rating)).slice(0,8).map(p=>`<div class="training-row"><span><strong>${p.name}</strong><small>OVR ${p.rating} · POT ${p.potential}</small></span><select data-training="${p.id}"><option>Ausgewogen</option><option>Wurf</option><option>Defense</option><option>Athletik</option><option>Regeneration</option></select><button data-train="${p.id}">Trainieren</button></div>`).join('')}</div></div>`;}
+function lineupWarnings(roster){
+  const warnings=[];
+  starterSlots.forEach(slot=>{const p=roster.find(x=>x.starterSlot===slot);if(p&&!fitsSlot(p.position,slot))warnings.push(`${slot}: ${p.name} (${p.position}) passt nicht ideal.`)});
+  return warnings;
+}
+
+function renderRotation(){
+  const t=activeTeam(),roster=normalizeRotationSetup(save.rosters[t.id]);
+  const starters=starterSlots.map(slot=>({slot,player:roster.find(p=>p.starterSlot===slot)}));
+  const bench=roster.filter(p=>!p.starterSlot).sort((a,b)=>a.rotationOrder-b.rotationOrder);
+  const playerOptions=roster.filter(p=>!p.twoWay).map(p=>`<option value="${p.id}">${p.name} · ${p.position} · OVR ${p.rating}</option>`).join('');
+  const warnings=lineupWarnings(roster);
+  $('#view-content').innerHTML=`<div class="split-grid"><div class="content-card"><div class="card-head"><h3>Starting Five</h3><span>Manuelle Aufstellung</span></div><p class="muted">Wähle für jede Position einen Starter. Ungewöhnliche Aufstellungen sind möglich, werden aber markiert.</p><div class="starter-grid">${starters.map(({slot,player})=>`<label><span>${slot}</span><select class="starter-select" data-slot="${slot}">${playerOptions.replace(`value="${player?.id}"`,`value="${player?.id}" selected`)}</select></label>`).join('')}</div><div id="lineup-warning" class="lineup-warning ${warnings.length?'':'hidden'}">${warnings.join('<br>')}</div><button class="secondary-action full-button" id="auto-rotation">BESTE ROTATION AUTOMATISCH WÄHLEN</button><h3 class="section-title">Bankreihenfolge</h3><p class="muted">Bei Verletzungen rückt der oberste passende Bankspieler zuerst nach.</p><div class="bench-list">${bench.map((p,i)=>`<div class="bench-row" data-bench-player="${p.id}"><span class="bench-rank">${i+1}</span><strong>${p.name}<small>${p.position} · OVR ${p.rating}${p.twoWay?' · Two-Way':''}</small></strong><span class="bench-controls"><button data-bench-up="${p.id}" ${i===0?'disabled':''}>↑</button><button data-bench-down="${p.id}" ${i===bench.length-1?'disabled':''}>↓</button></span></div>`).join('')}</div></div><div><div class="content-card"><div class="card-head"><h3>Spielminuten</h3><span id="minute-total">${roster.reduce((s,p)=>s+p.minutes,0)} / 240 Min.</span></div>${roster.slice().sort((a,b)=>(a.starterSlot?starterSlots.indexOf(a.starterSlot):99)-(b.starterSlot?starterSlots.indexOf(b.starterSlot):99)||a.rotationOrder-b.rotationOrder).map(p=>`<div class="rotation-row"><span><strong>${p.name}</strong><small>${p.starterSlot?`Starter ${p.starterSlot}`:'Bank'} · ${p.position} · OVR ${p.rating}</small></span><input class="minute-input" data-player="${p.id}" type="number" min="0" max="42" value="${p.minutes}"></div>`).join('')}<button class="primary-action" id="save-rotation">AUFSTELLUNG SPEICHERN</button></div><div class="content-card training-card"><h3>Training · ${save.trainingPoints[t.id]} Punkte</h3>${roster.slice().sort((a,b)=>b.potential-b.rating-(a.potential-a.rating)).slice(0,8).map(p=>`<div class="training-row"><span><strong>${p.name}</strong><small>OVR ${p.rating} · POT ${p.potential}</small></span><select data-training="${p.id}"><option>Ausgewogen</option><option>Wurf</option><option>Defense</option><option>Athletik</option><option>Regeneration</option></select><button data-train="${p.id}">Trainieren</button></div>`).join('')}</div></div></div>`;
+}
+
+function moveBenchPlayer(id,direction){
+  const row=document.querySelector(`[data-bench-player="${id}"]`);if(!row)return;
+  const sibling=direction<0?row.previousElementSibling:row.nextElementSibling;if(!sibling)return;
+  if(direction<0)row.parentElement.insertBefore(row,sibling);else row.parentElement.insertBefore(sibling,row);
+  [...document.querySelectorAll('[data-bench-player]')].forEach((x,i)=>{x.querySelector('.bench-rank').textContent=i+1;const buttons=x.querySelectorAll('button');buttons[0].disabled=i===0;buttons[1].disabled=i===document.querySelectorAll('[data-bench-player]').length-1});
+}
+
+function saveRotationSetup(){
+  const roster=save.rosters[save.activeTeam],selects=[...document.querySelectorAll('.starter-select')],ids=selects.map(x=>x.value);
+  if(new Set(ids).size!==5)return alert('Jeder Starter darf nur einmal ausgewählt werden.');
+  const inputs=[...document.querySelectorAll('.minute-input')],total=inputs.reduce((s,x)=>s+Number(x.value),0);
+  if(total!==240)return alert(`Die Rotation muss genau 240 Minuten ergeben. Aktuell: ${total}.`);
+  roster.forEach(p=>p.starterSlot=null);selects.forEach(x=>roster.find(p=>p.id===x.value).starterSlot=x.dataset.slot);
+  inputs.forEach(x=>roster.find(p=>p.id===x.dataset.player).minutes=Number(x.value));
+  [...document.querySelectorAll('[data-bench-player]')].forEach((x,i)=>{const p=roster.find(y=>y.id===x.dataset.benchPlayer);if(p&&!p.starterSlot)p.rotationOrder=5+i});
+  normalizeRotationSetup(roster);persist();const warnings=lineupWarnings(roster);alert(warnings.length?`Aufstellung gespeichert. Hinweis:\n${warnings.join('\n')}`:'Aufstellung gespeichert.');renderView('rotation');
+}
+
+function updateLineupPreview(){
+  const box=$('#lineup-warning');if(!box)return;
+  const roster=save.rosters[save.activeTeam],selects=[...document.querySelectorAll('.starter-select')],ids=selects.map(x=>x.value),warnings=[];
+  if(new Set(ids).size!==ids.length)warnings.push('Ein Spieler wurde mehrfach als Starter gewählt.');
+  selects.forEach(x=>{const p=roster.find(y=>y.id===x.value);if(p&&!fitsSlot(p.position,x.dataset.slot))warnings.push(`${x.dataset.slot}: ${p.name} (${p.position}) passt nicht ideal.`)});
+  box.innerHTML=warnings.join('<br>');box.classList.toggle('hidden',!warnings.length);
+}
 
 function gamesForTeam(id){return save.schedule.flatMap((day,di)=>day.filter(g=>g.home===id||g.away===id).map(g=>({...g,day:di})));}
 function findNextGame(id){return gamesForTeam(id).find(g=>!g.played);}
@@ -286,16 +367,19 @@ document.addEventListener('click',e=>{
   const team=e.target.closest('.team-card');if(team)return setSelection(team.dataset.team);
   const load=e.target.closest('[data-load-slot]');if(load){slot=load.dataset.loadSlot;save=readSave(slot);return showDashboard()}
   const sign=e.target.closest('[data-sign]');if(sign)return signPlayer(sign.dataset.sign);
+  const benchUp=e.target.closest('[data-bench-up]');if(benchUp)return moveBenchPlayer(benchUp.dataset.benchUp,-1);
+  const benchDown=e.target.closest('[data-bench-down]');if(benchDown)return moveBenchPlayer(benchDown.dataset.benchDown,1);
   const train=e.target.closest('[data-train]');if(train){const t=activeTeam();if(save.trainingPoints[t.id]<1)return alert('Keine Trainingspunkte verfügbar.');const p=save.rosters[t.id].find(x=>x.id===train.dataset.train);const type=document.querySelector(`[data-training="${p.id}"]`).value;if(type==='Regeneration')p.fatigue=clamp(p.fatigue-20,0,100);else if(p.rating<p.potential&&Math.random()<.55)p.rating++;p.training=type;save.trainingPoints[t.id]--;persist();return renderView('rotation')}
   if(e.target.id==='sim-next')simulateDays(1);if(e.target.id==='sim-10')simulateDays(10);if(e.target.id==='finish-season')finishRegularSeason();if(e.target.id==='sim-playoffs')simulatePlayoffs();if(e.target.id==='run-draft')runDraft();if(e.target.id==='next-season')advanceSeason();if(e.target.id==='offer-trade')offerTrade();if(e.target.id==='last-boxscore')showBoxscore(findGameById(save.lastGame));
-  if(e.target.id==='save-rotation'){const inputs=[...document.querySelectorAll('.minute-input')],total=inputs.reduce((s,x)=>s+Number(x.value),0);if(total!==240)return alert(`Die Rotation muss genau 240 Minuten ergeben. Aktuell: ${total}.`);inputs.forEach(x=>save.rosters[save.activeTeam].find(p=>p.id===x.dataset.player).minutes=Number(x.value));persist();alert('Rotation gespeichert.');}
+  if(e.target.id==='auto-rotation'){buildDefaultRotation(save.rosters[save.activeTeam]);persist();return renderView('rotation')}
+  if(e.target.id==='save-rotation')return saveRotationSetup();
 });
 
 $('#all-teams').addEventListener('click',()=>setSelection('all'));
 $('#start-game').addEventListener('click',startCareer);
 $('#team-switcher').addEventListener('change',e=>{save.activeTeam=e.target.value;persist();renderView(currentView)});
 $('#trade-team')?.addEventListener('change',updateTradePlayers);
-$('#view-content').addEventListener('change',e=>{if(e.target.id==='trade-team')updateTradePlayers();if(e.target.classList.contains('minute-input'))$('#minute-total').textContent=`${[...document.querySelectorAll('.minute-input')].reduce((s,x)=>s+Number(x.value),0)} / 240 Min.`});
+$('#view-content').addEventListener('change',e=>{if(e.target.id==='trade-team')updateTradePlayers();if(e.target.classList.contains('starter-select'))updateLineupPreview();if(e.target.classList.contains('minute-input'))$('#minute-total').textContent=`${[...document.querySelectorAll('.minute-input')].reduce((s,x)=>s+Number(x.value),0)} / 240 Min.`});
 $('#save-game').addEventListener('click',()=>{persist();alert(`Karriere in Slot ${slot} gespeichert.`)});
 $('#new-career').addEventListener('click',()=>{persist();location.reload()});
 $('#close-modal').addEventListener('click',()=>$('#game-modal').classList.add('hidden'));

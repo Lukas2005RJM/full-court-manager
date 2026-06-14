@@ -106,6 +106,20 @@ th, td { padding: 11px 9px; border-bottom: 1px solid var(--line); white-space: n
 .rotation-row, .training-row { display: grid; grid-template-columns: 1fr 72px; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
 .rotation-row small, .training-row small { display: block; color: var(--muted); margin-top: 3px; }
 .rotation-row input { width: 72px; padding: 8px; background: var(--bg); border: 1px solid var(--line); color: white; }
+.starter-grid { display: grid; gap: 8px; margin: 18px 0; }
+.starter-grid label { display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 10px; margin: 0; }
+.starter-grid label > span { color: var(--orange); font: 800 16px 'Barlow Condensed'; }
+.starter-grid select { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--line); color: white; }
+.lineup-warning { padding: 10px 12px; margin: 10px 0; border: 1px solid #8d5b2b; background: rgba(255,105,35,.09); color: #ffc18f; font-size: 12px; line-height: 1.55; }
+.full-button { width: 100%; }
+.section-title { margin: 28px 0 4px; }
+.bench-list { margin-top: 12px; }
+.bench-row { display: grid; grid-template-columns: 28px 1fr 76px; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--line); }
+.bench-row small { display: block; margin-top: 3px; color: var(--muted); }
+.bench-rank { color: var(--muted); text-align: center; }
+.bench-controls { display: flex; gap: 5px; }
+.bench-controls button { width: 34px; height: 32px; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; }
+.training-card { margin-top: 14px; }
 .training-row { grid-template-columns: 1fr 112px 82px; }
 .training-row select, .content-card > select { background: var(--bg); color: white; border: 1px solid var(--line); padding: 9px; }
 .training-row button, .player-row button { padding: 9px; background: var(--panel-2); color: white; }
