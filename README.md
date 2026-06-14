@@ -12,9 +12,15 @@ Ein browserbasiertes NBA-Manager-Spiel mit allen 30 Teams.
 - manuelle Starting Five und Bankreihenfolge, automatische 240-Minuten-Rotation als Option
 - positionsgerechte Ersatzspieler, Training, Müdigkeit und Verletzungen
 - Trades, Free Agency, Verträge und Salary Cap
+- Trade-Pakete mit mehreren Spielern, Draftpicks und Gegenwertprüfung
+- Teamtaktiken für Tempo, Offensive, Defense und Rotationstiefe
+- konkrete Verletzungen, Form, Moral und Belastungsmanagement
+- Luxury Tax, First Apron und Second Apron
 - Tabellen für Eastern und Western Conference
 - Play-in-Turnier, Best-of-Seven-Playoffs und NBA Finals
-- Draft, Vertragsoptionen, Free Agency, Alterung und Entwicklung über mehrere Saisons
+- Draft-Lotterie, Scouting, handelbare Picks und Entwicklung über mehrere Saisons
+- Match Center mit Viertelergebnissen, Spielverlauf und Boxscore
+- MVP-, DPOY- und Rookie-Awards sowie Liga-Bestenlisten und News Center
 
 Die Spielerbewertungen und Vertragswerte sind Simulationswerte und keine offiziellen NBA-2K- oder Vertragsdaten. Kaderbewegungen nach dem 13. Juni 2026 sind nicht enthalten.
 

@@ -37,6 +37,11 @@ const lastNames = ['Williams','Johnson','Brown','Miller','Davis','Wilson','Moore
 const positions = ['PG','SG','SF','PF','C'];
 const positionByName = Object.fromEntries(Object.keys(STATIC_ROSTERS).flatMap(teamId=>STATIC_ROSTERS[teamId].map((name,i)=>[name,STATIC_POSITIONS[teamId][i]])));
 const cap = 154.6;
+const taxLine = 187.9;
+const firstApron = 195.9;
+const secondApron = 207.8;
+const defaultTactics=()=>({pace:'Normal',offense:'Ausgewogen',defense:'Mann',focus:'Ausgewogen',rotation:'Normal'});
+const injuryTypes=[['Knöchelverstauchung',2,7],['Rückenprobleme',3,9],['Oberschenkelzerrung',2,6],['Knieprellung',1,5],['Handverletzung',3,10],['Fußverletzung',5,14]];
 let selection = null;
 let slot = '1';
 let save = null;
@@ -77,6 +82,14 @@ function makePlayer(name,i,team,index) {
 }
 
 function resetStats(){return {gp:0,pts:0,reb:0,ast:0,stl:0,blk:0};}
+
+function makePicks(){return Object.fromEntries(teams.map(t=>[t.id,[0,1,2].flatMap(y=>[1,2].map(round=>({id:`${t.id}_${2026+y}_${round}`,originalTeam:t.id,owner:t.id,year:2026+y,round}))) ]));}
+function normalizeSaveData(d){
+  d.tactics=d.tactics||Object.fromEntries(teams.map(t=>[t.id,defaultTactics()]));
+  d.picks=d.picks||makePicks();d.scouting=d.scouting||{};d.awards=d.awards||[];d.leagueNews=d.leagueNews||[];
+  Object.values(d.rosters||{}).flat().forEach(p=>{p.form=p.form??0;p.morale=p.morale??75;p.injuryType=p.injuryType||''});
+  return d;
+}
 
 function normalizePlayerPositions(rosters){
   Object.values(rosters||{}).forEach(roster=>{
@@ -165,7 +178,7 @@ function generateSchedule() {
 }
 
 function generateProspects(season=1) {
-  return Array.from({length:30},(_,i)=>{const rating=clamp(79-Math.floor(i/4)+rand(-2,2),61,82);return{id:`prospect_${season}_${i}`,name:`${firstNames[(i+season)%15]} ${lastNames[(i*2+season)%15]}`,position:positions[i%5],age:19+rand(0,3),rating,potential:clamp(rating+rand(6,16),75,98),salary:5.5,years:4,minutes:0,fatigue:0,injury:0,training:'Ausgewogen',stats:{gp:0,pts:0,reb:0,ast:0,stl:0,blk:0}}});
+  return Array.from({length:30},(_,i)=>{const rating=clamp(79-Math.floor(i/4)+rand(-2,2),61,82);return{id:`prospect_${season}_${i}`,name:`${firstNames[(i+season)%15]} ${lastNames[(i*2+season)%15]}`,position:positions[i%5],age:19+rand(0,3),rating,potential:clamp(rating+rand(6,16),75,98),scouted:false,salary:5.5,years:4,minutes:0,fatigue:0,injury:0,training:'Ausgewogen',stats:resetStats()}});
 }
 
 function makeFreeAgents() { return Array.from({length:20},(_,i)=>makePlayer(`${firstNames[(i+7)%15]} ${lastNames[(i*5+4)%15]}`,8+i,teams[i%30],90+i)).map((p,i)=>({...p,id:`fa_${i}`,rating:clamp(76-i+rand(-2,3),62,79),salary:Number((2+Math.max(0,15-i)*.45).toFixed(1)),years:1,minutes:0})); }
@@ -175,14 +188,15 @@ function startCareer() {
   slot=$('#save-slot').value;
   const rosters={};
   const loaded=teams.map(fallbackRoster); teams.forEach((t,i)=>rosters[t.id]=loaded[i]);
-  save={version:9,slot,manager:$('#manager-name').value.trim()||'Coach',controlAll:selection==='all',activeTeam:selection==='all'?'atl':selection,season:1,seasonLabel:'2025/26',phase:'Regular Season',day:0,rosters:normalizePlayerPositions(rosters),records:Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}])),schedule:generateSchedule(),freeAgents:makeFreeAgents(),prospects:generateProspects(),history:[],playoffs:null,lastGame:null,news:['Die neue NBA-Saison beginnt.'],trainingPoints:Object.fromEntries(teams.map(t=>[t.id,3]))};
+  save=normalizeSaveData({version:10,slot,manager:$('#manager-name').value.trim()||'Coach',controlAll:selection==='all',activeTeam:selection==='all'?'atl':selection,season:1,seasonLabel:'2025/26',phase:'Regular Season',day:0,rosters:normalizePlayerPositions(rosters),records:Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}])),schedule:generateSchedule(),freeAgents:makeFreeAgents(),prospects:generateProspects(),history:[],playoffs:null,lastGame:null,news:['Die neue NBA-Saison beginnt.'],trainingPoints:Object.fromEntries(teams.map(t=>[t.id,3]))});
   persist(); showDashboard();
 }
 
 function persist() { localStorage.setItem(saveKey(slot),JSON.stringify(save)); }
-function readSave(n) { try { const d=JSON.parse(localStorage.getItem(saveKey(n)));if(!d||d.version<5)return null;d.rosters=normalizePlayerPositions(d.rosters);d.version=9;return d; } catch{return null;} }
+function readSave(n) { try { const d=JSON.parse(localStorage.getItem(saveKey(n)));if(!d||d.version<5)return null;d.rosters=normalizePlayerPositions(d.rosters);d.version=10;return normalizeSaveData(d); } catch{return null;} }
 function activeTeam(){return teamById(save.activeTeam);}
 function payroll(id){return save.rosters[id].reduce((s,p)=>s+p.salary,0);}
+function financeStatus(id){const pay=payroll(id);return {pay,tax:Math.max(0,(pay-taxLine)*1.5),level:pay>secondApron?'Second Apron':pay>firstApron?'First Apron':pay>taxLine?'Luxury Tax':pay>cap?'Über dem Cap':'Cap Space'};}
 function contractLabel(p){
   if(p.twoWay)return 'Two-Way';
   const years=(p.salaries||[p.salary]).map((x,i)=>`${2025+i}/${String(26+i).padStart(2,'0')}: ${money(x)}`).join(' · ');
@@ -211,10 +225,12 @@ function activeGameRotation(id){
 }
 function teamPower(id){
   const rotation=activeGameRotation(id);if(!rotation.length)return 55;
-  const weighted=rotation.reduce((s,x)=>s+x.player.rating*x.minutes*(1-x.player.fatigue/260),0)/240;
+  const tactics=save.tactics?.[id]||defaultTactics();
+  const weighted=rotation.reduce((s,x)=>s+(x.player.rating+(x.player.form||0)*.35)*x.minutes*(1-x.player.fatigue/260),0)/240;
   const stars=rotation.slice().sort((a,b)=>b.player.rating-a.player.rating).slice(0,3).reduce((s,x)=>s+Math.max(0,x.player.rating-84),0)*.12;
   const hasGuard=rotation.some(x=>['PG','SG','G','GF'].includes(x.player.position)),hasBig=rotation.some(x=>['PF','C','F','FC'].includes(x.player.position));
-  return weighted+stars-(hasGuard&&hasBig?0:2.5);
+  const fit=(tactics.offense==='Dreier'&&rotation.filter(x=>['PG','SG','G','GF'].includes(x.player.position)).length>=4?1:0)+(tactics.offense==='Inside'&&rotation.filter(x=>['PF','C','FC'].includes(x.player.position)).length>=3?1:0);
+  return weighted+stars+fit-(hasGuard&&hasBig?0:2.5);
 }
 
 function showDashboard(){
@@ -226,16 +242,16 @@ function showDashboard(){
 
 function setHeader(){const t=activeTeam();document.documentElement.style.setProperty('--team-accent',t.color);$('#welcome-title').textContent=`${save.manager} · ${t.abbr}`;$('#season-status').textContent=`${save.seasonLabel} · ${save.phase} · ${save.phase==='Regular Season'?`Spieltag ${Math.min(82,save.day+1)}`:''}`;$('#active-team-mark').innerHTML=`<span class="team-mark-badge">${t.abbr}</span><span>${fullName(t)}<small>${save.controlAll?'Alle Teams steuerbar':`Slot ${slot}`} · ${money(payroll(t.id))} Payroll</small></span>`;}
 
-function renderView(view=currentView){currentView=view;setHeader();document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===view));const fn={overview:renderOverview,roster:renderRoster,rotation:renderRotation,schedule:renderSchedule,standings:renderStandings,transactions:renderTransactions,draft:renderDraft,playoffs:renderPlayoffs}[view]||renderOverview;fn();}
+function renderView(view=currentView){currentView=view;setHeader();document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===view));const fn={overview:renderOverview,roster:renderRoster,rotation:renderRotation,tactics:renderTactics,schedule:renderSchedule,standings:renderStandings,transactions:renderTransactions,draft:renderDraft,league:renderLeague,playoffs:renderPlayoffs}[view]||renderOverview;fn();}
 
 function renderOverview(){
   const t=activeTeam(),r=save.records[t.id],next=findNextGame(t.id),rank=conferenceStandings(t.conference).findIndex(x=>x.id===t.id)+1;
   $('#view-content').innerHTML=`<div class="stats-grid"><div class="stat-box"><small>Bilanz</small><strong>${r.wins}-${r.losses}</strong></div><div class="stat-box"><small>Conference</small><strong>#${rank}</strong></div><div class="stat-box"><small>Kader</small><strong>${save.rosters[t.id].length}</strong><small>Spieler</small></div><div class="stat-box"><small>Teamstärke</small><strong>${teamPower(t.id).toFixed(0)}</strong></div></div>
   <div class="action-bar"><button class="primary-action" id="sim-next" ${save.phase!=='Regular Season'?'disabled':''}>NÄCHSTEN SPIELTAG SIMULIEREN</button><button class="secondary-action" id="sim-10" ${save.phase!=='Regular Season'?'disabled':''}>10 SPIELTAGE</button></div>
-  <div class="dash-grid"><div class="content-card"><h3>Team-News</h3>${save.news.slice(-6).reverse().map(n=>`<p class="news-item">${n}</p>`).join('')}</div><div class="content-card"><h3>Nächstes Spiel</h3>${next?`<div class="next-game"><strong>${teamById(next.home).abbr}</strong><span class="versus">VS</span><strong>${teamById(next.away).abbr}</strong><p>Spieltag ${next.day+1}</p></div>`:`<p class="muted">Reguläre Saison beendet.</p>`}${save.lastGame?`<button class="text-button" id="last-boxscore">Letzten Boxscore öffnen</button>`:''}</div></div>`;
+  <div class="dash-grid"><div class="content-card"><div class="card-head"><h3>News Center</h3><span>Team & Liga</span></div>${[...save.news.slice(-4),...save.leagueNews.slice(-3)].slice(-7).reverse().map((n,i)=>`<p class="news-item"><span class="news-tag">${i<3?'AKTUELL':'LIGA'}</span>${n}</p>`).join('')}</div><div class="content-card"><h3>Nächstes Spiel</h3>${next?`<div class="next-game"><strong>${teamById(next.home).abbr}</strong><span class="versus">VS</span><strong>${teamById(next.away).abbr}</strong><p>Spieltag ${next.day+1}</p></div>`:`<p class="muted">Reguläre Saison beendet.</p>`}${save.lastGame?`<button class="text-button" id="last-boxscore">MATCH CENTER ÖFFNEN</button>`:''}</div></div>`;
 }
 
-function renderRoster(){const t=activeTeam();$('#view-content').innerHTML=`<div class="content-card"><div class="card-head"><h3>Kader · ${fullName(t)}</h3><span>${save.rosters[t.id].length} Spieler · ${money(payroll(t.id))}</span></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Spieler</th><th>Pos</th><th>Alter</th><th>OVR</th><th>POT</th><th>Vertrag</th><th>Status</th><th>Schnitt</th></tr></thead><tbody>${save.rosters[t.id].sort((a,b)=>b.rating-a.rating).map(p=>`<tr><td>${p.number}</td><td><strong>${p.name}</strong></td><td>${p.position}</td><td>${p.age}</td><td class="rating">${p.rating}</td><td>${p.potential}</td><td title="${contractLabel(p)}">${p.twoWay?'Two-Way':`${money(p.salary)} · ${p.years}J${p.option?` · ${p.option==='Player'?'PO':'TO'}`:''}`}</td><td>${p.injury>0?`<span class="bad">Verletzt (${p.injury})</span>`:`Fit · ${p.fatigue}%`}</td><td>${p.stats.gp?(p.stats.pts/p.stats.gp).toFixed(1):'0.0'} PPG</td></tr>`).join('')}</tbody></table></div><p class="muted">Fahre mit der Maus über einen Vertrag, um alle Jahresgehälter und Garantien zu sehen. PO = Spieleroption, TO = Teamoption.</p></div>`;}
+function renderRoster(){const t=activeTeam();$('#view-content').innerHTML=`<div class="content-card"><div class="card-head"><h3>Kader · ${fullName(t)}</h3><span>${save.rosters[t.id].length} Spieler · ${money(payroll(t.id))}</span></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Spieler</th><th>Pos</th><th>Alter</th><th>OVR</th><th>POT</th><th>Form</th><th>Vertrag</th><th>Status</th><th>Schnitt</th></tr></thead><tbody>${save.rosters[t.id].sort((a,b)=>b.rating-a.rating).map(p=>`<tr><td>${p.number}</td><td><strong>${p.name}</strong></td><td>${p.position}</td><td>${p.age}</td><td class="rating">${p.rating}</td><td>${p.potential}</td><td class="${p.form>0?'good':p.form<0?'bad':''}">${p.form>0?'+':''}${p.form||0}</td><td title="${contractLabel(p)}">${p.twoWay?'Two-Way':`${money(p.salary)} · ${p.years}J${p.option?` · ${p.option==='Player'?'PO':'TO'}`:''}`}</td><td>${p.injury>0?`<span class="bad">${p.injuryType} (${p.injury})</span>`:`Fit · ${p.fatigue}%`}</td><td>${p.stats.gp?(p.stats.pts/p.stats.gp).toFixed(1):'0.0'} PPG</td></tr>`).join('')}</tbody></table></div><p class="muted">Fahre mit der Maus über einen Vertrag, um alle Jahresgehälter und Garantien zu sehen. PO = Spieleroption, TO = Teamoption.</p></div>`;}
 
 function lineupWarnings(roster){
   const warnings=[];
@@ -278,6 +294,21 @@ function updateLineupPreview(){
   box.innerHTML=warnings.join('<br>');box.classList.toggle('hidden',!warnings.length);
 }
 
+function renderTactics(){
+  const t=save.tactics[save.activeTeam],select=(key,values)=>`<select data-tactic="${key}">${values.map(v=>`<option ${t[key]===v?'selected':''}>${v}</option>`).join('')}</select>`;
+  $('#view-content').innerHTML=`<div class="split-grid"><div class="content-card"><div class="card-head"><h3>Offensive Identität</h3><span>Wirkt direkt auf Tempo und Verteilung</span></div><label>Tempo</label>${select('pace',['Langsam','Normal','Schnell'])}<label>Offensive</label>${select('offense',['Ausgewogen','Dreier','Inside','Pick & Roll'])}<label>Erste Option</label>${select('focus',['Ausgewogen','Star fokussieren','Ball bewegen'])}</div><div class="content-card"><div class="card-head"><h3>Defensive Identität</h3><span>Matchup und Belastung</span></div><label>Defense</label>${select('defense',['Mann','Switching','Zone','Drop'])}<label>Rotation</label>${select('rotation',['Kurz','Normal','Tief'])}<div class="tactic-summary"><strong>Aktueller Plan</strong><p>${t.pace}es Tempo · ${t.offense} · ${t.defense} · ${t.rotation}e Rotation</p></div><button class="primary-action" id="save-tactics">TAKTIK SPEICHERN</button></div></div>`;
+}
+
+function leagueLeaders(stat){return teams.flatMap(t=>save.rosters[t.id].map(p=>({p,t,value:p.stats.gp?p.stats[stat]/p.stats.gp:0}))).filter(x=>x.p.stats.gp).sort((a,b)=>b.value-a.value).slice(0,10);}
+function awardLeaders(){
+  const all=teams.flatMap(t=>save.rosters[t.id].map(p=>({p,t,score:(p.stats.gp?p.stats.pts/p.stats.gp:0)+(p.rating-75)*.45+(p.stats.gp?p.stats.reb/p.stats.gp:0)*.35+(p.stats.gp?p.stats.ast/p.stats.gp:0)*.5})));
+  return all.sort((a,b)=>b.score-a.score).slice(0,8);
+}
+function renderLeague(){
+  const leaderTable=(title,stat,suffix)=>`<div class="content-card"><h3>${title}</h3>${leagueLeaders(stat).map((x,i)=>`<div class="standing-row"><span class="number">${i+1}</span><strong>${x.p.name}<small>${x.t.abbr}</small></strong><span>${x.value.toFixed(1)} ${suffix}</span></div>`).join('')||'<p class="muted">Nach dem ersten Spiel erscheinen die Bestenlisten.</p>'}</div>`;
+  $('#view-content').innerHTML=`<div class="league-hero content-card"><div><p class="eyebrow">NBA AWARD RACE</p><h3>MVP-Favoriten</h3></div>${awardLeaders().slice(0,5).map((x,i)=>`<div class="award-candidate"><span>${i+1}</span><strong>${x.p.name}<small>${x.t.abbr} · OVR ${x.p.rating}</small></strong></div>`).join('')||'<p class="muted">Die Award-Rennen starten mit der Saison.</p>'}</div><div class="stats-leaders">${leaderTable('Punkte','pts','PPG')}${leaderTable('Rebounds','reb','RPG')}${leaderTable('Assists','ast','APG')}</div>${save.awards.length?`<div class="content-card"><h3>Historische Awards</h3>${save.awards.slice().reverse().map(a=>`<p class="news-item"><strong>${a.season}:</strong> MVP ${a.mvp}, DPOY ${a.dpoy}, Rookie ${a.roy}</p>`).join('')}</div>`:''}`;
+}
+
 function gamesForTeam(id){return save.schedule.flatMap((day,di)=>day.filter(g=>g.home===id||g.away===id).map(g=>({...g,day:di})));}
 function findNextGame(id){return gamesForTeam(id).find(g=>!g.played);}
 function renderSchedule(){const games=gamesForTeam(save.activeTeam);const start=Math.max(0,save.day-5);$('#view-content').innerHTML=`<div class="content-card"><div class="card-head"><h3>82-Spiele-Spielplan</h3><span>${games.filter(g=>g.played).length}/82 gespielt</span></div>${games.slice(start,start+18).map(g=>{const opp=teamById(g.home===save.activeTeam?g.away:g.home);return`<div class="game-row"><span class="number">${g.day+1}</span><strong>${g.home===save.activeTeam?'vs.':'@'} ${fullName(opp)}<small>${g.played?'Beendet':'Noch offen'}</small></strong><span>${g.played?`${g.homeScore}-${g.awayScore}`:'-'}</span></div>`}).join('')}</div>`;}
@@ -285,23 +316,32 @@ function renderSchedule(){const games=gamesForTeam(save.activeTeam);const start=
 function conferenceStandings(conf){return teams.filter(t=>t.conference===conf).sort((a,b)=>{const ar=save.records[a.id],br=save.records[b.id];return br.wins-ar.wins||(br.pf-br.pa)-(ar.pf-ar.pa)});}
 function renderStandings(){const table=conf=>`<div class="content-card"><h3>${conf}ern Conference</h3>${conferenceStandings(conf).map((t,i)=>{const r=save.records[t.id];return`<div class="standing-row"><span class="number">${i+1}</span><strong>${fullName(t)}<small>${i<6?'Playoffs':i<10?'Play-in':'Lottery'}</small></strong><span>${r.wins}-${r.losses}</span></div>`}).join('')}</div>`;$('#view-content').innerHTML=`<div class="split-grid">${table('East')}${table('West')}</div>`;}
 
-function renderTransactions(){const t=activeTeam();const others=teams.filter(x=>x.id!==t.id);$('#view-content').innerHTML=`<div class="split-grid"><div class="content-card"><h3>Trade Center</h3><label>Dein Spieler</label><select id="trade-mine">${save.rosters[t.id].map(p=>`<option value="${p.id}">${p.name} · ${p.rating} · ${money(p.salary)}</option>`)}</select><label>Partner</label><select id="trade-team">${others.map(x=>`<option value="${x.id}">${fullName(x)}</option>`)}</select><label>Spieler des Partners</label><select id="trade-theirs"></select><button class="primary-action" id="offer-trade">Trade anbieten</button><p id="trade-result" class="muted"></p></div><div class="content-card"><h3>Free Agency</h3><p class="muted">Cap Space: ${money(cap-payroll(t.id))} · ${standardRosterCount(save.rosters[t.id])}/15 Standardverträge</p>${save.freeAgents.slice(0,12).map(p=>`<div class="player-row"><span class="number">${p.position}</span><strong>${p.name}<small>OVR ${p.rating} · ${money(p.salary)}</small></strong><button data-sign="${p.id}" ${standardRosterCount(save.rosters[t.id])>=15?'disabled':''}>Verpflichten</button></div>`).join('')||'<p>Keine Free Agents verfügbar.</p>'}</div></div>`;updateTradePlayers();}
+function tradeAssetList(teamId,side){return save.rosters[teamId].sort((a,b)=>b.rating-a.rating).map(p=>`<label class="trade-asset"><input type="checkbox" data-trade-${side}="${p.id}"><span><strong>${p.name}</strong><small>${p.position} · OVR ${p.rating} · ${money(p.salary)}</small></span></label>`).join('')}
+function pickOptions(teamId,side){return `<option value="">Kein Pick</option>${(save.picks[teamId]||[]).filter(p=>p.owner===teamId).map(p=>`<option value="${p.id}">${p.year} · Runde ${p.round} (${teamById(p.originalTeam).abbr})</option>`).join('')}`;}
+function renderTransactions(){
+  const t=activeTeam(),others=teams.filter(x=>x.id!==t.id),f=financeStatus(t.id);
+  $('#view-content').innerHTML=`<div class="finance-strip"><div><small>Payroll</small><strong>${money(f.pay)}</strong></div><div><small>Status</small><strong>${f.level}</strong></div><div><small>Luxury Tax</small><strong>${money(f.tax)}</strong></div><div><small>Kader</small><strong>${standardRosterCount(save.rosters[t.id])}/15</strong></div></div><div class="content-card"><div class="card-head"><h3>Trade Center</h3><span>Bis zu 3 Spieler plus Draftpick</span></div><label>Tradepartner</label><select id="trade-team">${others.map(x=>`<option value="${x.id}">${fullName(x)}</option>`)}</select><div class="trade-builder"><div><h3>${t.abbr} gibt ab</h3><div class="trade-assets" id="trade-mine-assets">${tradeAssetList(t.id,'mine')}</div><select id="trade-mine-pick">${pickOptions(t.id,'mine')}</select></div><div class="trade-arrow">⇄</div><div><h3 id="trade-partner-title"></h3><div class="trade-assets" id="trade-their-assets"></div><select id="trade-their-pick"></select></div></div><button class="primary-action" id="offer-trade">TRADE ANBIETEN</button><p id="trade-result" class="trade-result"></p></div><div class="content-card"><h3>Free Agency</h3><p class="muted">Cap Space: ${money(cap-payroll(t.id))} · Apron-Regeln beeinflussen Verpflichtungen.</p>${save.freeAgents.slice(0,12).map(p=>`<div class="player-row"><span class="number">${p.position}</span><strong>${p.name}<small>OVR ${p.rating} · ${money(p.salary)}</small></strong><button data-sign="${p.id}" ${standardRosterCount(save.rosters[t.id])>=15?'disabled':''}>Verpflichten</button></div>`).join('')||'<p>Keine Free Agents verfügbar.</p>'}</div>`;updateTradePlayers();
+}
 
-function renderDraft(){const order=draftOrder();$('#view-content').innerHTML=`<div class="split-grid"><div class="content-card"><h3>Draft Board</h3><p class="muted">Der Draft findet nach den Playoffs statt. Reihenfolge aktuell nach Bilanz.</p>${save.prospects.slice(0,15).map((p,i)=>`<div class="player-row"><span class="number">${i+1}</span><strong>${p.name}<small>${p.position} · ${p.age} Jahre · POT ${p.potential}</small></strong><span class="rating">${p.rating}</span></div>`).join('')}</div><div class="content-card"><h3>Aktuelle Draft-Reihenfolge</h3>${order.slice(0,15).map((t,i)=>`<div class="standing-row"><span class="number">${i+1}</span><strong>${fullName(t)}</strong><span>${save.records[t.id].wins} Siege</span></div>`).join('')}${save.phase==='Offseason'?'<button class="primary-action" id="run-draft">Draft durchführen</button>':''}</div></div>`;}
+function renderDraft(){const order=draftOrder();$('#view-content').innerHTML=`<div class="draft-toolbar content-card"><div><p class="eyebrow">SCOUTING DEPARTMENT</p><h3>Draft Board</h3><p class="muted">Unbeobachtete Talente zeigen nur eine Potenzialspanne. Scouting enthüllt den exakten Wert.</p></div><span>${save.prospects.filter(p=>p.scouted).length}/30 gescoutet</span></div><div class="split-grid"><div class="content-card">${save.prospects.slice(0,20).map((p,i)=>`<div class="player-row"><span class="number">${i+1}</span><strong>${p.name}<small>${p.position} · ${p.age} Jahre · POT ${p.scouted?p.potential:`${Math.max(70,p.potential-5)}–${Math.min(99,p.potential+4)}`}</small></strong>${p.scouted?`<span class="rating">${p.rating}</span>`:`<button data-scout="${p.id}">Scouten</button>`}</div>`).join('')}</div><div class="content-card"><h3>${save.phase==='Offseason'?'Draft-Lotterie':'Aktuelle Reihenfolge'}</h3>${order.slice(0,15).map((t,i)=>`<div class="standing-row"><span class="number">${i+1}</span><strong>${fullName(t)}<small>${save.records[t.id].wins} Siege</small></strong><span>${(save.picks[t.id]||[]).filter(p=>p.owner===t.id&&p.year===2026+save.season-1&&p.round===1).length} Pick</span></div>`).join('')}${save.phase==='Offseason'?'<button class="primary-action" id="run-draft">LOTTERIE & DRAFT DURCHFÜHREN</button>':''}</div></div>`;}
 
 function renderPlayoffs(){if(!save.playoffs){$('#view-content').innerHTML=`<div class="content-card empty-state"><h3>NBA Playoffs</h3><p>Nach 82 Spieltagen starten zuerst die Play-in-Spiele und danach vier Best-of-Seven-Runden.</p><button class="primary-action" id="finish-season" ${save.phase!=='Regular Season'?'disabled':''}>REGULAR SEASON SIMULIEREN</button></div>`;return;} $('#view-content').innerHTML=`<div class="content-card"><h3>Playoff-Ergebnisse</h3>${save.playoffs.log.map(x=>`<p class="news-item">${x}</p>`).join('')} ${save.phase==='Playoffs'?'<button class="primary-action" id="sim-playoffs">PLAYOFFS SIMULIEREN</button>':''}${save.phase==='Offseason'?'<button class="primary-action" id="next-season">DRAFT & NÄCHSTE SAISON</button>':''}</div>`;}
 
 function simulateGame(game,playoff=false){
-  const hp=teamPower(game.home)+3,ap=teamPower(game.away);let hs=Math.round(105+(hp-78)*.75+rand(-12,12)),as=Math.round(105+(ap-78)*.75+rand(-12,12));while(hs===as){hs+=rand(0,6);as+=rand(0,6)}
-  game.played=true;game.homeScore=hs;game.awayScore=as;game.box={home:playerBox(game.home,hs),away:playerBox(game.away,as)};
+  const ht=save.tactics?.[game.home]||defaultTactics(),at=save.tactics?.[game.away]||defaultTactics(),pace={Langsam:-5,Normal:0,Schnell:6};
+  const hp=teamPower(game.home)+3,ap=teamPower(game.away),base=105+(pace[ht.pace]+pace[at.pace])/2;
+  let hs=Math.round(base+(hp-78)*.75+rand(-12,12)),as=Math.round(base+(ap-78)*.75+rand(-12,12));while(hs===as){hs+=rand(0,6);as+=rand(0,6)}
+  const quarterScores=(total)=>{const q=[rand(21,31),rand(21,31),rand(21,31)];q.push(total-q.reduce((s,x)=>s+x,0));return q};
+  game.played=true;game.homeScore=hs;game.awayScore=as;game.quarters={home:quarterScores(hs),away:quarterScores(as)};game.box={home:playerBox(game.home,hs),away:playerBox(game.away,as)};
+  const stars=[...game.box.home.map(x=>({...x,team:game.home})),...game.box.away.map(x=>({...x,team:game.away}))].sort((a,b)=>b.pts-a.pts).slice(0,3);game.playByPlay=[`1. Viertel: ${teamById(game.home).abbr} ${game.quarters.home[0]}:${game.quarters.away[0]} ${teamById(game.away).abbr}`,`${stars[0]?.name} führt alle Scorer mit ${stars[0]?.pts} Punkten an.`,`Halbzeit: ${game.quarters.home.slice(0,2).reduce((s,x)=>s+x,0)}:${game.quarters.away.slice(0,2).reduce((s,x)=>s+x,0)}`,`${stars[1]?.name} setzt im dritten Viertel wichtige Akzente.`,`Endstand: ${teamById(game.home).abbr} ${hs}:${as} ${teamById(game.away).abbr}`];
   if(!playoff){const hr=save.records[game.home],ar=save.records[game.away];hr.pf+=hs;hr.pa+=as;ar.pf+=as;ar.pa+=hs;if(hs>as){hr.wins++;ar.losses++}else{ar.wins++;hr.losses++}}
   return hs>as?game.home:game.away;
 }
 
 function playerBox(id,score){
-  const rotation=activeGameRotation(id);
+  const rotation=activeGameRotation(id),tactics=save.tactics?.[id]||defaultTactics(),best=Math.max(...rotation.map(x=>x.player.rating));
   const role={PG:{usage:1.08,reb:.65,ast:1.65,blk:.25},SG:{usage:1.12,reb:.75,ast:1.05,blk:.35},SF:{usage:1.02,reb:1,ast:.8,blk:.55},PF:{usage:.94,reb:1.35,ast:.55,blk:1},C:{usage:.9,reb:1.65,ast:.45,blk:1.55},G:{usage:1.1,reb:.7,ast:1.35,blk:.3},GF:{usage:1.07,reb:.88,ast:.92,blk:.45},F:{usage:.98,reb:1.18,ast:.68,blk:.78},FC:{usage:.92,reb:1.5,ast:.5,blk:1.28}};
-  const weights=rotation.map(x=>Math.max(1,(x.player.rating-61)**1.55)*x.minutes*role[x.player.position].usage*(.88+Math.random()*.24));
+  const weights=rotation.map(x=>{let tactical=1;if(tactics.focus==='Star fokussieren'&&x.player.rating===best)tactical=1.2;if(tactics.focus==='Ball bewegen')tactical=.94+(100-x.player.rating)/220;if(tactics.offense==='Dreier'&&['PG','SG','G','GF'].includes(x.player.position))tactical*=1.08;if(tactics.offense==='Inside'&&['PF','C','FC'].includes(x.player.position))tactical*=1.1;return Math.max(1,(x.player.rating-61)**1.55)*x.minutes*role[x.player.position].usage*tactical*(.88+Math.random()*.24)});
   const total=weights.reduce((s,x)=>s+x,0)||1;
   const raw=weights.map(w=>score*w/total),points=raw.map(Math.floor);let left=score-points.reduce((s,x)=>s+x,0);
   raw.map((x,i)=>({i,f:x-points[i]})).sort((a,b)=>b.f-a.f).slice(0,left).forEach(x=>points[x.i]++);
@@ -310,15 +350,17 @@ function playerBox(id,score){
     const line={id:p.id,name:p.name,min:minutes,pts:points[i],reb:Math.max(0,Math.round(minutes/5.7*r.reb+rand(-2,2))),ast:Math.max(0,Math.round(minutes/8*r.ast+(p.rating-75)/14+rand(-2,2))),stl:Math.max(0,Math.round(minutes/28+(p.rating-75)/25+rand(-1,1))),blk:Math.max(0,Math.round(minutes/30*r.blk+(p.rating-75)/30+rand(-1,1)))};
     p.stats.gp++;p.stats.pts+=line.pts;p.stats.reb+=line.reb;p.stats.ast+=line.ast;p.stats.stl+=line.stl;p.stats.blk+=line.blk;
     p.fatigue=clamp(p.fatigue+Math.round(minutes/9),0,100);
-    if(Math.random()<.003+p.fatigue/9000){p.injury=rand(1,10);save.news.push(`${p.name} fällt voraussichtlich ${p.injury} Spiele aus.`)}
+    p.form=clamp((p.form||0)+(line.pts>p.rating/4?1:-1),-5,5);p.morale=clamp((p.morale||75)+(line.pts>=15?1:0),35,100);
+    if(Math.random()<.003+p.fatigue/9000){const injury=injuryTypes[rand(0,injuryTypes.length-1)];p.injuryType=injury[0];p.injury=rand(injury[1],injury[2]);const item=`${p.name}: ${p.injuryType}, voraussichtlich ${p.injury} Spiele Pause.`;save.news.push(item);save.leagueNews.push(item)}
     return line;
   });
 }
 
-function recoverPlayers(){teams.forEach(t=>save.rosters[t.id].forEach(p=>{p.fatigue=clamp(p.fatigue-3,0,100);if(p.injury>0)p.injury--}));}
+function recoverPlayers(){teams.forEach(t=>save.rosters[t.id].forEach(p=>{p.fatigue=clamp(p.fatigue-3,0,100);if(p.injury>0){p.injury--;if(!p.injury)p.injuryType=''}if(Math.random()<.08)p.form+=(p.form>0?-1:p.form<0?1:0)}));}
 function simulateDay(){if(save.day>=82){setupPostseason();return;}const games=save.schedule[save.day];games.forEach(g=>simulateGame(g));const mine=games.find(g=>g.home===save.activeTeam||g.away===save.activeTeam);save.lastGame=mine?.id||save.lastGame;save.day++;recoverPlayers();if(save.day%7===0)teams.forEach(t=>save.trainingPoints[t.id]+=3);if(mine)save.news.push(`${teamById(mine.home).abbr} ${mine.homeScore}:${mine.awayScore} ${teamById(mine.away).abbr}`);if(save.day>=82)setupPostseason();persist();}
 function simulateDays(n){for(let i=0;i<n&&save.phase==='Regular Season';i++)simulateDay();renderView();}
-function setupPostseason(){if(save.phase!=='Regular Season')return;save.phase='Playoffs';save.playoffs={log:[],champion:null};runPlayIn();}
+function calculateAwards(){const ranked=awardLeaders(),rookies=teams.flatMap(t=>save.rosters[t.id].filter(p=>p.age<=21).map(p=>({p,t,score:p.rating+(p.stats.gp?p.stats.pts/p.stats.gp:0)}))).sort((a,b)=>b.score-a.score),defenders=teams.flatMap(t=>save.rosters[t.id].map(p=>({p,t,score:p.rating+(p.stats.gp?(p.stats.stl+p.stats.blk)/p.stats.gp:0)*4}))).sort((a,b)=>b.score-a.score);const award={season:save.seasonLabel,mvp:ranked[0]?.p.name||'-',dpoy:defenders[0]?.p.name||'-',roy:rookies[0]?.p.name||'-'};save.awards.push(award);save.leagueNews.push(`Awards: ${award.mvp} gewinnt MVP, ${award.dpoy} wird DPOY.`)}
+function setupPostseason(){if(save.phase!=='Regular Season')return;calculateAwards();save.phase='Playoffs';save.playoffs={log:[],champion:null};runPlayIn();}
 function finishRegularSeason(render=true){while(save.day<82)simulateDay();setupPostseason();persist();if(render)renderView('playoffs');}
 
 function series(a,b,label){let aw=0,bw=0;while(aw<4&&bw<4){const g={home:(aw+bw)%2?a:b,away:(aw+bw)%2?b:a};const w=simulateGame(g,true);w===a?aw++:bw++;}const winner=aw>bw?a:b;save.playoffs.log.push(`${label}: ${teamById(winner).abbr} gewinnt ${Math.max(aw,bw)}-${Math.min(aw,bw)} gegen ${teamById(winner===a?b:a).abbr}`);return winner;}
@@ -326,9 +368,9 @@ function singleGame(a,b,label){const g={home:a,away:b};const w=simulateGame(g,tr
 function runPlayIn(){['East','West'].forEach(c=>{const s=conferenceStandings(c),seven=singleGame(s[6].id,s[7].id,`${c} Play-in 7/8`),nine=singleGame(s[8].id,s[9].id,`${c} Play-in 9/10`),eight=singleGame(seven===s[6].id?s[7].id:s[6].id,nine,`${c} Play-in Finale`);save.playoffs[c]=[s[0].id,eight,s[3].id,s[4].id,s[2].id,s[5].id,s[1].id,seven];});}
 function simulatePlayoffs(){const champs={};['East','West'].forEach(c=>{let b=save.playoffs[c];let r1=[series(b[0],b[1],`${c} Runde 1`),series(b[2],b[3],`${c} Runde 1`),series(b[4],b[5],`${c} Runde 1`),series(b[6],b[7],`${c} Runde 1`)];let r2=[series(r1[0],r1[1],`${c} Halbfinale`),series(r1[2],r1[3],`${c} Halbfinale`)];champs[c]=series(r2[0],r2[1],`${c} Finals`)});const champion=series(champs.East,champs.West,'NBA Finals');save.playoffs.champion=champion;save.phase='Offseason';save.history.push({season:save.seasonLabel,champion});save.news.push(`${fullName(teamById(champion))} sind NBA-Champion!`);persist();renderView('playoffs');}
 
-function draftOrder(){return [...teams].sort((a,b)=>save.records[a.id].wins-save.records[b.id].wins);}
+function draftOrder(){const base=[...teams].sort((a,b)=>save.records[a.id].wins-save.records[b.id].wins);if(save.phase!=='Offseason')return base;if(save.lotteryOrder)return save.lotteryOrder.map(teamById);const lottery=base.slice(0,14).map((t,i)=>({t,key:Math.random()*(14-i)})).sort((a,b)=>b.key-a.key).map(x=>x.t),order=[...lottery,...base.slice(14)];save.lotteryOrder=order.map(t=>t.id);return order;}
 function standardRosterCount(roster){return roster.filter(p=>!p.twoWay).length;}
-function runDraft(){draftOrder().forEach((t,i)=>{const p=save.prospects[i];if(!p)return;const roster=save.rosters[t.id];if(standardRosterCount(roster)>=15){const cut=roster.filter(x=>!x.twoWay).sort((a,b)=>a.rating-b.rating||b.age-a.age)[0];save.freeAgents.push(cut);roster.splice(roster.indexOf(cut),1)}roster.push({...p,id:`${t.id}_${p.id}`,salaries:Array(4).fill(p.salary),contractYear:0,stats:resetStats()});buildDefaultRotation(roster);});save.prospects=[];save.news.push('Der NBA Draft wurde durchgeführt.');persist();renderView('draft');}
+function runDraft(){const draftYear=2025+save.season;draftOrder().forEach((originalTeam,i)=>{const p=save.prospects[i];if(!p)return;const pick=Object.values(save.picks).flat().find(x=>x.originalTeam===originalTeam.id&&x.year===draftYear&&x.round===1),owner=pick?.owner||originalTeam.id,roster=save.rosters[owner];if(standardRosterCount(roster)>=15){const cut=roster.filter(x=>!x.twoWay).sort((a,b)=>a.rating-b.rating||b.age-a.age)[0];save.freeAgents.push(cut);roster.splice(roster.indexOf(cut),1)}roster.push({...p,id:`${owner}_${p.id}`,salaries:Array(4).fill(p.salary),contractYear:0,stats:resetStats()});if(i<5)save.leagueNews.push(`Draft #${i+1}: ${teamById(owner).abbr} wählt ${p.name}.`);buildDefaultRotation(roster);});save.prospects=[];save.lotteryOrder=null;save.news.push('Draft-Lotterie und NBA Draft wurden durchgeführt.');persist();renderView('draft');}
 function optionAccepted(p,nextSalary){const market=Math.max(2,(p.rating-68)*1.8+(p.potential-p.rating)*.5);return p.option==='Player'?nextSalary>=market*.72:market>=nextSalary*.72;}
 function advanceSeason(){
   if(save.prospects.length)runDraft();
@@ -353,25 +395,38 @@ function advanceSeason(){
     }
     buildDefaultRotation(roster);
   });
-  save.season++;save.seasonLabel=`${2024+save.season}/${String(25+save.season).padStart(2,'0')}`;save.phase='Regular Season';save.day=0;save.records=Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}]));save.schedule=generateSchedule();save.prospects=generateProspects(save.season);save.playoffs=null;save.lastGame=null;persist();renderView('overview');
+  save.season++;save.seasonLabel=`${2024+save.season}/${String(25+save.season).padStart(2,'0')}`;save.phase='Regular Season';save.day=0;save.records=Object.fromEntries(teams.map(t=>[t.id,{wins:0,losses:0,pf:0,pa:0}]));save.schedule=generateSchedule();save.prospects=generateProspects(save.season);save.playoffs=null;save.lastGame=null;save.lotteryOrder=null;persist();renderView('overview');
 }
 
-function showBoxscore(game){if(!game)return;const rows=(id,lines)=>`<h3>${fullName(teamById(id))}</h3><table><thead><tr><th>Spieler</th><th>MIN</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th></tr></thead><tbody>${lines.map(x=>`<tr><td>${x.name}</td><td>${x.min}</td><td>${x.pts}</td><td>${x.reb}</td><td>${x.ast}</td><td>${x.stl}</td><td>${x.blk}</td></tr>`).join('')}</tbody></table>`;$('#modal-content').innerHTML=`<h2>BOX SCORE · ${game.homeScore}:${game.awayScore}</h2><div class="table-wrap">${rows(game.home,game.box.home)}${rows(game.away,game.box.away)}</div>`;$('#game-modal').classList.remove('hidden');}
+function showBoxscore(game){if(!game)return;const rows=(id,lines)=>`<h3>${fullName(teamById(id))}</h3><table><thead><tr><th>Spieler</th><th>MIN</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th></tr></thead><tbody>${lines.map(x=>`<tr><td>${x.name}</td><td>${x.min}</td><td>${x.pts}</td><td>${x.reb}</td><td>${x.ast}</td><td>${x.stl}</td><td>${x.blk}</td></tr>`).join('')}</tbody></table>`;const quarters=game.quarters?`<div class="quarter-board"><span>TEAM</span><span>Q1</span><span>Q2</span><span>Q3</span><span>Q4</span><strong>${teamById(game.home).abbr}</strong>${game.quarters.home.map(x=>`<b>${x}</b>`).join('')}<strong>${teamById(game.away).abbr}</strong>${game.quarters.away.map(x=>`<b>${x}</b>`).join('')}</div>`:'';$('#modal-content').innerHTML=`<div class="match-head"><p class="eyebrow">MATCH CENTER</p><h2>${teamById(game.home).abbr} ${game.homeScore}:${game.awayScore} ${teamById(game.away).abbr}</h2></div>${quarters}<div class="play-log">${(game.playByPlay||[]).map(x=>`<p>${x}</p>`).join('')}</div><div class="table-wrap">${rows(game.home,game.box.home)}${rows(game.away,game.box.away)}</div>`;$('#game-modal').classList.remove('hidden');}
 function findGameById(id){return save.schedule.flat().find(g=>g.id===id);}
-function updateTradePlayers(){const el=$('#trade-team'),target=$('#trade-theirs');if(!el||!target)return;target.innerHTML=save.rosters[el.value].map(p=>`<option value="${p.id}">${p.name} · ${p.rating} · ${money(p.salary)}</option>`).join('');}
-function offerTrade(){const mine=save.rosters[save.activeTeam].find(p=>p.id===$('#trade-mine').value),otherId=$('#trade-team').value,theirs=save.rosters[otherId].find(p=>p.id===$('#trade-theirs').value);const valueMine=mine.rating+(mine.potential-mine.rating)*.45-mine.age*.08,valueTheirs=theirs.rating+(theirs.potential-theirs.rating)*.45-theirs.age*.08;const salaryOk=Math.max(mine.salary,theirs.salary)<=Math.min(mine.salary,theirs.salary)*1.35+5;if(valueMine+rand(-3,3)>=valueTheirs&&salaryOk){save.rosters[save.activeTeam]=save.rosters[save.activeTeam].filter(p=>p.id!==mine.id);save.rosters[otherId]=save.rosters[otherId].filter(p=>p.id!==theirs.id);save.rosters[save.activeTeam].push(theirs);save.rosters[otherId].push(mine);save.news.push(`Trade: ${theirs.name} kommt für ${mine.name}.`);persist();renderView('transactions')}else $('#trade-result').textContent=salaryOk?'Das andere Team lehnt den sportlichen Gegenwert ab.':'Trade abgelehnt: Gehälter passen nicht zusammen.';}
-function signPlayer(id){const p=save.freeAgents.find(x=>x.id===id);if(!p)return;const roster=save.rosters[save.activeTeam];if(standardRosterCount(roster)>=15||payroll(save.activeTeam)+p.salary>cap+10){alert('Kein Kaderplatz oder Cap Space verfügbar.');return}p.twoWay=false;p.salaries=[p.salary];p.contractYear=0;roster.push(p);buildDefaultRotation(roster);save.freeAgents=save.freeAgents.filter(x=>x.id!==id);save.news.push(`${p.name} unterschreibt für ${money(p.salary)}.`);persist();renderView('transactions');}
+function updateTradePlayers(){const el=$('#trade-team'),target=$('#trade-their-assets');if(!el||!target)return;target.innerHTML=tradeAssetList(el.value,'theirs');$('#trade-their-pick').innerHTML=pickOptions(el.value,'theirs');$('#trade-partner-title').textContent=`${teamById(el.value).abbr} gibt ab`;}
+function tradeValue(players,pick){return players.reduce((s,p)=>s+p.rating+(p.potential-p.rating)*.65-Math.max(0,p.age-29)*.3,0)+(pick?(pick.round===1?18:6)+(pick.year-2026)*1.5:0);}
+function offerTrade(){
+  const otherId=$('#trade-team').value,mine=[...document.querySelectorAll('[data-trade-mine]:checked')].slice(0,3).map(x=>save.rosters[save.activeTeam].find(p=>p.id===x.dataset.tradeMine)),theirs=[...document.querySelectorAll('[data-trade-theirs]:checked')].slice(0,3).map(x=>save.rosters[otherId].find(p=>p.id===x.dataset.tradeTheirs));
+  const myPick=(save.picks[save.activeTeam]||[]).find(p=>p.id===$('#trade-mine-pick').value),theirPick=(save.picks[otherId]||[]).find(p=>p.id===$('#trade-their-pick').value),result=$('#trade-result');
+  if(!mine.length&&!myPick||!theirs.length&&!theirPick){result.textContent='Beide Teams müssen mindestens einen Wert abgeben.';return}
+  const mySalary=mine.reduce((s,p)=>s+p.salary,0),theirSalary=theirs.reduce((s,p)=>s+p.salary,0),salaryOk=Math.max(mySalary,theirSalary)<=Math.min(mySalary,theirSalary)*1.25+10;
+  const accepted=salaryOk&&tradeValue(mine,myPick)+rand(-4,4)>=tradeValue(theirs,theirPick);
+  if(!accepted){const gap=Math.max(0,tradeValue(theirs,theirPick)-tradeValue(mine,myPick));result.innerHTML=salaryOk?`Abgelehnt. ${teamById(otherId).abbr} verlangt etwa <strong>${gap.toFixed(1)}</strong> mehr Trade-Wert. Gegenangebot: Lege einen Pick oder besseren Spieler dazu.`:'Abgelehnt: Die Gehälter passen nach den Matching-Regeln nicht.';return}
+  save.rosters[save.activeTeam]=save.rosters[save.activeTeam].filter(p=>!mine.includes(p)).concat(theirs);save.rosters[otherId]=save.rosters[otherId].filter(p=>!theirs.includes(p)).concat(mine);
+  if(myPick){myPick.owner=otherId;save.picks[otherId].push(myPick);save.picks[save.activeTeam]=save.picks[save.activeTeam].filter(p=>p!==myPick)}if(theirPick){theirPick.owner=save.activeTeam;save.picks[save.activeTeam].push(theirPick);save.picks[otherId]=save.picks[otherId].filter(p=>p!==theirPick)}
+  buildDefaultRotation(save.rosters[save.activeTeam]);buildDefaultRotation(save.rosters[otherId]);const headline=`Trade: ${theirs.map(p=>p.name).join(', ')||'Draftpick'} zu ${teamById(save.activeTeam).abbr}.`;save.news.push(headline);save.leagueNews.push(headline);persist();renderView('transactions');
+}
+function signPlayer(id){const p=save.freeAgents.find(x=>x.id===id);if(!p)return;const roster=save.rosters[save.activeTeam],projected=payroll(save.activeTeam)+p.salary;if(standardRosterCount(roster)>=15||projected>firstApron){alert(projected>firstApron?'Verpflichtung blockiert: Das Team würde den First Apron überschreiten.':'Kein Kaderplatz verfügbar.');return}p.twoWay=false;p.salaries=[p.salary];p.contractYear=0;roster.push(p);buildDefaultRotation(roster);save.freeAgents=save.freeAgents.filter(x=>x.id!==id);const item=`${p.name} unterschreibt bei ${activeTeam().abbr} für ${money(p.salary)}.`;save.news.push(item);save.leagueNews.push(item);persist();renderView('transactions');}
 
 document.addEventListener('click',e=>{
   const nav=e.target.closest('.nav-item');if(nav)return renderView(nav.dataset.view);
   const team=e.target.closest('.team-card');if(team)return setSelection(team.dataset.team);
   const load=e.target.closest('[data-load-slot]');if(load){slot=load.dataset.loadSlot;save=readSave(slot);return showDashboard()}
   const sign=e.target.closest('[data-sign]');if(sign)return signPlayer(sign.dataset.sign);
+  const scout=e.target.closest('[data-scout]');if(scout){const p=save.prospects.find(x=>x.id===scout.dataset.scout);p.scouted=true;save.scouting[p.id]=true;persist();return renderView('draft')}
   const benchUp=e.target.closest('[data-bench-up]');if(benchUp)return moveBenchPlayer(benchUp.dataset.benchUp,-1);
   const benchDown=e.target.closest('[data-bench-down]');if(benchDown)return moveBenchPlayer(benchDown.dataset.benchDown,1);
   const train=e.target.closest('[data-train]');if(train){const t=activeTeam();if(save.trainingPoints[t.id]<1)return alert('Keine Trainingspunkte verfügbar.');const p=save.rosters[t.id].find(x=>x.id===train.dataset.train);const type=document.querySelector(`[data-training="${p.id}"]`).value;if(type==='Regeneration')p.fatigue=clamp(p.fatigue-20,0,100);else if(p.rating<p.potential&&Math.random()<.55)p.rating++;p.training=type;save.trainingPoints[t.id]--;persist();return renderView('rotation')}
   if(e.target.id==='sim-next')simulateDays(1);if(e.target.id==='sim-10')simulateDays(10);if(e.target.id==='finish-season')finishRegularSeason();if(e.target.id==='sim-playoffs')simulatePlayoffs();if(e.target.id==='run-draft')runDraft();if(e.target.id==='next-season')advanceSeason();if(e.target.id==='offer-trade')offerTrade();if(e.target.id==='last-boxscore')showBoxscore(findGameById(save.lastGame));
   if(e.target.id==='auto-rotation'){buildDefaultRotation(save.rosters[save.activeTeam]);persist();return renderView('rotation')}
+  if(e.target.id==='save-tactics'){document.querySelectorAll('[data-tactic]').forEach(x=>save.tactics[save.activeTeam][x.dataset.tactic]=x.value);persist();alert('Taktik gespeichert.');return renderView('tactics')}
   if(e.target.id==='save-rotation')return saveRotationSetup();
 });
 
