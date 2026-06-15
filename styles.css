@@ -1178,6 +1178,7 @@ th, td { padding: 12px 11px; }
 .live-match-center{grid-template-rows:94px 48px auto minmax(0,1fr) 48px}
 .live-scoreboard>div>b{min-width:92px;font-size:66px}.live-scoreboard>div>strong{font-size:26px}.live-scoreboard>div>i{font-size:0;border:2px solid #54636d;border-radius:50%;background:#151f27}.live-scoreboard>div>i::after{content:'●';color:#dfff00;font-size:24px}.live-scoreboard>section>strong{font-size:43px}.live-scoreboard>section>span{font-size:12px}
 .live-controls button,.live-controls label{min-height:36px;padding:8px 13px;font-size:10px}
+.live-team-control{gap:7px!important;color:#dfff00!important}.live-team-control select{height:25px;padding:0 24px 0 8px;color:#fff;border:1px solid #5c6a74;background:#071018;font-weight:900}.live-team-control select:focus{border-color:#dfff00;outline:0}
 .live-match-grid{grid-template-columns:minmax(720px,1.35fr) minmax(390px,.72fr) minmax(520px,.95fr);align-items:start}.live-court-panel{align-self:start}.live-basketball-court{height:min(55vh,590px);min-height:460px}
 .live-court-player{width:148px;min-height:62px;grid-template-columns:54px minmax(0,1fr);padding:6px}.live-player-photo,.live-court-player>i{width:50px;height:56px;font-size:14px}.live-court-player b{font-size:12px}.live-court-player small{font-size:9px}
 .live-team-stats span{min-height:35px;font-size:10px}.live-team-stats b{font-size:12px}
