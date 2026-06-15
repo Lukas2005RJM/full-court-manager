@@ -1223,3 +1223,13 @@ th, td { padding: 12px 11px; }
 #live-player-detail{min-height:75px;margin-top:8px;border-radius:5px;background:linear-gradient(90deg,#12212b,#0a1218)}
 .live-match-footer{margin:0 8px 6px;padding:5px 12px;border:1px solid #34444e;border-radius:5px;background:#0d171e}.live-match-footer span{font-size:10px;letter-spacing:.4px}.live-match-footer .primary-action{height:32px}
 @media(max-width:1500px){.live-match-grid{grid-template-columns:minmax(0,1fr) 450px}.live-court-player{width:132px;min-height:60px;grid-template-columns:48px 1fr}.live-player-photo,.live-court-player>i{width:45px;height:51px}.live-court-player b{font-size:11px}.live-stat-head,.live-stat-row{grid-template-columns:minmax(106px,1.5fr) 27px 28px 38px 38px repeat(5,26px)!important;font-size:8px}}
+
+/* Stable Match Center rows */
+.live-match-center{grid-template-rows:108px 56px 0 minmax(0,1fr) 42px}
+.live-match-center:has(.shot-filter-bar:not(.hidden)){grid-template-rows:108px 56px 48px minmax(0,1fr) 42px}
+.shot-filter-bar.hidden{display:flex;visibility:hidden;height:0;min-height:0;padding:0;border:0;overflow:hidden}
+.shot-filter-bar:not(.hidden){height:auto;visibility:visible}
+.live-match-grid{height:100%;min-height:0;align-self:stretch}
+.live-court-panel{height:100%;min-height:0;align-self:stretch}
+.live-basketball-court{height:100%;min-height:360px}
+.live-match-footer{height:36px;min-height:36px;align-self:center}
