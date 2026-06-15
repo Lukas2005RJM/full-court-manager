@@ -1032,6 +1032,12 @@ th, td { padding: 12px 11px; }
 .dynamic-potential { display:inline-flex; align-items:center; gap:3px; color:#dce3e8; font-weight:900; }
 .dynamic-potential.up { color:#61e88e; }
 .dynamic-potential.down { color:#ff747e; }
+.roster-table tbody tr.selected-player .dynamic-potential,
+.roster-table tbody tr.selected-player .dynamic-potential.up,
+.roster-table tbody tr.selected-player .dynamic-potential.down,
+.roster-table tbody tr:hover .dynamic-potential,
+.roster-table tbody tr:hover .dynamic-potential.up,
+.roster-table tbody tr:hover .dynamic-potential.down { color:#071018; text-shadow:none; }
 
 /* Redesigned career start screen */
 .setup-screen { position:relative; width:100%; max-width:1900px; min-height:calc(100vh - 64px); grid-template-columns:minmax(430px,.78fr) minmax(760px,1.22fr); gap:clamp(34px,4vw,76px); align-items:center; margin:0 auto; padding:28px clamp(24px,3vw,58px) 34px; overflow:hidden; }
