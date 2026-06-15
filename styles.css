@@ -1016,6 +1016,10 @@ th, td { padding: 12px 11px; }
 .award-empty { min-height:80px; display:grid; place-items:center; }
 @media(max-width:1100px){.league-home-layout{grid-template-columns:1fr}.player-week-card{min-height:560px}.award-dashboard-grid{grid-template-columns:1fr}.award-dashboard-card:last-child{grid-column:auto}.league-view .dash-head{display:none}}
 @media(max-width:720px){.league-podium,.league-top-ten{grid-template-columns:1fr}.league-board-head,.award-dashboard-intro{flex-direction:column}.league-stat-picker{justify-content:flex-start}.award-dashboard-card button{grid-template-columns:25px 44px minmax(0,1fr) 55px}.award-team-logo,.award-trend{display:none}}
+
+.dynamic-potential { display:inline-flex; align-items:center; gap:3px; color:#dce3e8; font-weight:900; }
+.dynamic-potential.up { color:#61e88e; }
+.dynamic-potential.down { color:#ff747e; }
 .standings-table { width:100%; max-width:100%; overflow:hidden; box-sizing:border-box; }
 .standings-table-head,.standings-table-row { width:100%; min-width:0; grid-template-columns:20px 28px minmax(92px,1fr) repeat(2,25px) 34px 29px 34px minmax(70px,.75fr) 34px 34px 31px; gap:3px; padding:0 4px; box-sizing:border-box; }
 .standings-table-head { font-size:7px; }.standings-table-row { min-height:42px; }.standings-table-row strong { min-width:0; overflow:hidden; font-size:11px; line-height:1.05; }.standings-table-row strong small { font-size:6px; }.standings-table-row b { font-size:8px; }.standings-table-row .standing-logo,.standings-table-row>i { width:27px; height:27px; }.form-dots { overflow:hidden; gap:1px; }.form-dots i { width:12px; min-width:12px; height:14px; font-size:6px; }
