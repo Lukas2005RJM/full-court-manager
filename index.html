@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=35">
+  <link rel="stylesheet" href="styles.css?v=36">
 </head>
 <body>
   <div class="noise"></div>
@@ -19,19 +19,27 @@
   <main>
     <section id="setup-screen" class="setup-screen">
       <div class="hero-copy">
+        <div class="setup-season-mark">PRO BASKETBALL · 2025/26</div>
         <p class="eyebrow">DEINE LIGA. DEINE ENTSCHEIDUNGEN.</p>
-        <h1>ÜBERNIMM<br><em>DAS PARKETT.</em></h1>
-        <p class="intro">Wähle eine der 30 NBA-Franchises und führe sie an die Spitze – oder kontrolliere die gesamte Liga.</p>
+        <h1>BAUE DEINE<br><em>DYNASTIE.</em></h1>
+        <p class="intro">Übernimm eine Franchise, forme den Kader und schreibe deine eigene Basketball-Geschichte.</p>
+        <div class="setup-features">
+          <span><b>30</b> NBA-TEAMS</span>
+          <span><b>82</b> SAISONSPIELE</span>
+          <span><b>∞</b> KARRIEREN</span>
+        </div>
+        <div class="setup-promise">
+          <strong>REALISTISCHER FRANCHISE-MODUS</strong>
+          <p>Trades · Verträge · Draft · Entwicklung · Taktiken · Awards</p>
+        </div>
         <div id="existing-saves" class="existing-saves"></div>
       </div>
       <div class="setup-panel">
-        <div class="panel-heading"><div><p class="step">SCHRITT 01</p><h2>Wen möchtest du managen?</h2></div><span id="selection-count">0 ausgewählt</span></div>
+        <div class="panel-heading"><div><p class="step">NEUE KARRIERE</p><h2>Wähle deine Franchise</h2></div><span id="selection-count">0 ausgewählt</span></div>
         <button id="all-teams" class="all-teams-card" type="button"><span class="all-icon">◎</span><span><strong>ALLE TEAMS VERWALTEN</strong><small>Volle Kontrolle über Transfers, Aufstellungen und Taktiken der gesamten Liga.</small></span><span class="check">✓</span></button>
         <div class="divider"><span>ODER WÄHLE EIN TEAM</span></div>
         <div id="team-grid" class="team-grid"></div>
-        <div class="manager-row"><label for="manager-name">Managername</label><input id="manager-name" maxlength="24" value="Coach" autocomplete="off"></div>
-        <div class="manager-row"><label for="save-slot">Speicherplatz</label><select id="save-slot"><option value="1">Slot 1</option><option value="2">Slot 2</option><option value="3">Slot 3</option></select></div>
-        <button id="start-game" class="start-button" type="button" disabled>KARRIERE STARTEN <span>→</span></button>
+        <div class="career-start-bar"><div class="manager-row"><label for="manager-name">Managername</label><input id="manager-name" maxlength="24" value="Coach" autocomplete="off"></div><div class="manager-row"><label for="save-slot">Speicherplatz</label><select id="save-slot"><option value="1">Slot 1</option><option value="2">Slot 2</option><option value="3">Slot 3</option></select></div><button id="start-game" class="start-button" type="button" disabled>KARRIERE STARTEN <span>→</span></button></div>
       </div>
     </section>
     <section id="dashboard" class="dashboard hidden">
@@ -60,6 +68,6 @@
   </main>
   <div id="game-modal" class="modal hidden"><div class="modal-card"><button id="close-modal" class="modal-close">×</button><div id="modal-content"></div></div></div>
   <script src="rosters.js?v=16"></script>
-  <script src="app.js?v=35"></script>
+  <script src="app.js?v=36"></script>
 </body>
 </html>

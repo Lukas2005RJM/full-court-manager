@@ -72,13 +72,14 @@ const clamp = (n,min,max) => Math.max(min,Math.min(max,n));
 const saveKey = n => `fullCourtSaveV3_${n}`;
 
 function renderTeamChoice() {
-  $('#team-grid').innerHTML = teams.map(t => `<button class="team-card" style="--team-color:${t.color}" data-team="${t.id}"><span class="team-abbr">${t.abbr}</span><strong>${fullName(t)}</strong><small>${t.conference} · Stärke ${t.strength}</small><span class="check">✓</span></button>`).join('');
+  const tier=t=>t.strength>=90?'TITELFAVORIT':t.strength>=84?'PLAYOFF-TEAM':t.strength>=78?'PLAY-IN':t.strength>=73?'AUFBAU':'REBUILD';
+  $('#team-grid').innerHTML = teams.map(t => `<button class="team-card" style="--team-color:${t.color}" data-team="${t.id}"><span class="team-abbr">${t.abbr}</span><span class="team-card-conf">${t.conference}</span><strong>${fullName(t)}</strong><small>${tier(t)} · ${t.strength}</small><span class="check">✓</span></button>`).join('');
   renderExistingSaves();
 }
 
 function renderExistingSaves() {
   const items = [1,2,3].map(n => ({n,data:readSave(n)})).filter(x=>x.data);
-  $('#existing-saves').innerHTML = items.length ? `<p class="eyebrow">KARRIEREN FORTSETZEN</p>${items.map(x=>`<button class="save-card" data-load-slot="${x.n}"><strong>Slot ${x.n} · ${x.data.manager}</strong><small>${fullName(teamById(x.data.activeTeam))} · ${x.data.seasonLabel} · ${x.data.phase}</small></button>`).join('')}` : '';
+  $('#existing-saves').innerHTML = items.length ? `<p class="eyebrow">KARRIEREN FORTSETZEN</p><div class="save-card-grid">${items.map(x=>{const t=teamById(x.data.activeTeam),r=x.data.records?.[t.id]||{wins:0,losses:0};return`<button class="save-card" data-load-slot="${x.n}"><span style="--save-color:${t.color}">${t.abbr}</span><strong>Slot ${x.n} · ${x.data.manager}<small>${fullName(t)} · ${r.wins}-${r.losses}</small></strong><b>FORTSETZEN →</b></button>`}).join('')}</div>` : '';
 }
 
 function setSelection(value) {
